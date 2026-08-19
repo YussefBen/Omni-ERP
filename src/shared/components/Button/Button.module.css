@@ -1,0 +1,16 @@
+.button {
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.55rem 1.2rem;
+  border-radius: 0.6rem;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.2s, opacity 0.2s;
+}
+.button:disabled { opacity: 0.5; cursor: not-allowed; }
+.primary { color: white; background: var(--accent); }
+.primary:hover:not(:disabled) { border-color: var(--accent-border); }
+.secondary { color: var(--text-h); background: var(--accent-bg); }
+.secondary:hover:not(:disabled) { border-color: var(--accent-border); }
+.danger { color: white; background: #ef4444; }
+.danger:hover:not(:disabled) { border-color: #fca5a5; }
