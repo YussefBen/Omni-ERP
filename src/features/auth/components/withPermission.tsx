@@ -1,5 +1,4 @@
 // Cache le composant si le rôle du user n'est pas autorisé (RBAC)
-
 import type { ComponentType } from 'react';
 import type { Role } from '@/shared/types';
 import { useSession } from '../hooks/useSession';
