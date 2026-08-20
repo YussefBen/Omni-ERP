@@ -191,14 +191,25 @@ export type UpdateOpportunityPayload = Partial<CreateOpportunityPayload> & {
 
 /* ---------- Feedback et NPS ---------- */
 
-// Réponse client à une enquête de satisfaction, persistée dans db.json.
+// Forme renvoyée par GET /comments de JSONPlaceholder.
+export interface JsonPlaceholderComment {
+  postId: number;
+  id: number;
+  name: string;
+  email: string;
+  body: string;
+}
+
+// Avis client normalisé. Le score est dérivé de l'identifiant du commentaire,
+// JSONPlaceholder ne fournissant aucune note.
 export interface Feedback {
   id: number;
   clientId: number;
   // Note de recommandation de 0 à 10, base du calcul du NPS.
   score: number;
   comment?: string;
-  createdAt: string;
+  authorName: string;
+  authorEmail: string;
 }
 
 export type NpsCategory = 'detracteur' | 'passif' | 'promoteur';
