@@ -1,11 +1,18 @@
-// Hooks de lecture des clients CRM. Respectent le contrat de forme du socle commun.
+// Hooks de lecture et de qualification des clients CRM.
+// Respectent le contrat de forme du socle commun.
 
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { DEFAULT_PAGE_SIZE } from '@/shared/config/constants';
-import { fetchClientById, fetchClients } from '../services/crmService';
+import { fetchClientById, fetchClients, updateClientStatus } from '../services/crmService';
 import { crmKeys } from './crmKeys';
-import type { Client, ClientFilters, PaginatedClients } from '../types';
+import type {
+  ClientDetail,
+  ClientFilters,
+  ClientProfile,
+  PaginatedClients,
+  UpdateClientStatusPayload,
+} from '../types';
 
 interface UseClientsResult {
   data: PaginatedClients | undefined;
@@ -51,14 +58,15 @@ export function useClients(filters: ClientFilters = {}): UseClientsResult {
 }
 
 interface UseClientResult {
-  data: Client | undefined;
+  data: ClientDetail | undefined;
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
   refetch: () => void;
 }
 
-// Détail d'un client. La requête reste en attente tant qu'aucun identifiant n'est fourni.
+// Fiche client avec l'historique d'achats détaillé.
+// La requête reste en attente tant qu'aucun identifiant n'est fourni.
 export function useClient(id: number | undefined): UseClientResult {
   const query = useQuery({
     queryKey: crmKeys.clientDetail(id ?? 0),
@@ -72,5 +80,29 @@ export function useClient(id: number | undefined): UseClientResult {
     isError: query.isError,
     error: query.error,
     refetch: () => void query.refetch(),
+  };
+}
+
+// Qualification manuelle d'un client. Invalide les listes et la fiche
+// pour que le nouveau statut apparaisse partout.
+export function useUpdateClientStatus() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation<ClientProfile, Error, UpdateClientStatusPayload>({
+    mutationFn: updateClientStatus,
+    onSuccess: (_profile, payload) => {
+      void queryClient.invalidateQueries({ queryKey: crmKeys.clients() });
+      void queryClient.invalidateQueries({
+        queryKey: crmKeys.clientDetail(payload.clientId),
+      });
+    },
+  });
+
+  return {
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    isPending: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
   };
 }

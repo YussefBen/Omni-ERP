@@ -2,7 +2,7 @@
 
 import type { UserRef } from '@/shared/types';
 
-/* ---------- Réponse brute de DummyJSON ---------- */
+/* ---------- Réponses brutes de DummyJSON ---------- */
 
 // Forme renvoyée par GET /users — on ne déclare que les champs exploités.
 export interface DummyJsonUser {
@@ -25,6 +25,28 @@ export interface DummyJsonUser {
   role: string;
 }
 
+// Ligne de produit dans un panier DummyJSON.
+export interface DummyJsonCartProduct {
+  id: number;
+  title: string;
+  price: number;
+  quantity: number;
+  total: number;
+  discountedTotal: number;
+  thumbnail: string;
+}
+
+// Forme renvoyée par GET /carts — sert d'historique d'achats.
+export interface DummyJsonCart {
+  id: number;
+  userId: number;
+  products: DummyJsonCartProduct[];
+  total: number;
+  discountedTotal: number;
+  totalProducts: number;
+  totalQuantity: number;
+}
+
 // Enveloppe de pagination commune à toutes les listes DummyJSON.
 export interface DummyJsonList<T> {
   users?: T[];
@@ -33,6 +55,49 @@ export interface DummyJsonList<T> {
   total: number;
   skip: number;
   limit: number;
+}
+
+/* ---------- Qualification client ---------- */
+
+// Décision commerciale : saisie par l'utilisateur, persistée dans db.json.
+export type ClientStatus = 'Lead' | 'Active' | 'Inactive' | 'Churned';
+
+// Calcul objectif : déduit du volume d'achats, jamais saisi à la main.
+export type ClientSegment = 'Enterprise' | 'MidMarket' | 'Small' | 'Individual';
+
+// Enregistrement de la collection clientProfiles de db.json.
+export interface ClientProfile {
+  id: number;
+  clientId: number;
+  status: ClientStatus;
+  notes?: string;
+  updatedAt: string;
+}
+
+/* ---------- Historique d'achats ---------- */
+
+export interface PurchaseLine {
+  productId: number;
+  title: string;
+  price: number;
+  quantity: number;
+  total: number;
+  thumbnail: string;
+}
+
+// Commande passée par un client. DummyJSON ne fournit pas de date de commande.
+export interface Purchase {
+  id: number;
+  totalAmount: number;
+  discountedAmount: number;
+  itemCount: number;
+  products: PurchaseLine[];
+}
+
+export interface PurchaseSummary {
+  totalSpent: number;
+  orderCount: number;
+  itemCount: number;
 }
 
 /* ---------- Client ---------- */
@@ -49,6 +114,15 @@ export interface Client {
   department: string;
   city: string;
   country: string;
+  status: ClientStatus;
+  segment: ClientSegment;
+  totalSpent: number;
+  orderCount: number;
+}
+
+// Client avec le détail de ses commandes, pour l'écran de fiche.
+export interface ClientDetail extends Client {
+  purchases: Purchase[];
 }
 
 export interface ClientFilters {
@@ -63,6 +137,12 @@ export interface PaginatedClients {
   total: number;
   page: number;
   pageSize: number;
+}
+
+export interface UpdateClientStatusPayload {
+  clientId: number;
+  status: ClientStatus;
+  notes?: string;
 }
 
 /* ---------- Pipeline de vente ---------- */
