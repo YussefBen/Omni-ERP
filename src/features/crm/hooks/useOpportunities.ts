@@ -6,6 +6,7 @@ import {
   fetchPipelineStages,
   updateOpportunity,
 } from '../services/crmService';
+import { publishPipelineEvent } from '../services/pipelineEvents';
 import { crmKeys } from './crmKeys';
 import type {
   CreateOpportunityPayload,
@@ -70,6 +71,7 @@ export function useOpportunities(stageId?: PipelineStageId): UseOpportunitiesRes
 
 interface MutationContext {
   previous: Array<[readonly unknown[], Opportunity[] | undefined]>;
+  fromStage?: PipelineStageId;
 }
 
 
@@ -111,16 +113,35 @@ export function useUpdateOpportunity() {
   >({
     mutationFn: updateOpportunity,
 
-    onMutate: async (payload) => {
-      // Annule les requêtes en vol : sinon une réponse tardive écraserait l'état optimiste.
-      await queryClient.cancelQueries({ queryKey: crmKeys.opportunities() });
+       onMutate: async (payload) => {
 
-      return patchCachedLists(queryClient, (items) =>
+        await queryClient.cancelQueries({ queryKey: crmKeys.opportunities() });
+
+      const before = queryClient
+        .getQueriesData<Opportunity[]>({ queryKey: crmKeys.opportunities() })
+        .flatMap(([, items]) => items ?? [])
+        .find((item) => item.id === payload.id);
+
+      const context = patchCachedLists(queryClient, (items) =>
         items.map((item) => (item.id === payload.id ? { ...item, ...payload } : item)),
       );
+
+      return { ...context, fromStage: before?.stageId };
     },
 
     onError: (_error, _payload, context) => restore(queryClient, context),
+
+    onSuccess: (opportunity, payload, context) => {
+      if (payload.stageId && payload.stageId !== context?.fromStage) {
+        publishPipelineEvent({
+          type: 'stage-changed',
+          opportunityId: opportunity.id,
+          opportunity,
+          fromStage: context?.fromStage,
+          toStage: payload.stageId,
+        });
+      }
+    },
 
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: crmKeys.opportunities() });
@@ -162,7 +183,16 @@ export function useCreateOpportunity() {
       return patchCachedLists(queryClient, (items) => [...items, draft]);
     },
 
-    onError: (_error, _payload, context) => restore(queryClient, context),
+        onError: (_error, _payload, context) => restore(queryClient, context),
+
+    onSuccess: (opportunity) => {
+      publishPipelineEvent({
+        type: 'created',
+        opportunityId: opportunity.id,
+        opportunity,
+        toStage: opportunity.stageId,
+      });
+    },
 
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: crmKeys.opportunities() });
@@ -193,6 +223,13 @@ export function useDeleteOpportunity() {
     },
 
     onError: (_error, _id, context) => restore(queryClient, context),
+
+    onSuccess: (id) => {
+      publishPipelineEvent({
+        type: 'deleted',
+        opportunityId: id,
+      });
+    },
 
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: crmKeys.opportunities() });
