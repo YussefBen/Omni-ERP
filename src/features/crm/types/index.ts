@@ -173,8 +173,9 @@ export interface Opportunity {
   stageId: PipelineStageId;
   // Montant potentiel en euros.
   amount: number;
-  expectedCloseDate: string;
-  owner?: UserRef;
+   expectedCloseDate: string;
+  // Commercial responsable de l'affaire.
+  owner: UserRef;
   createdAt: string;
   updatedAt: string;
 }
@@ -211,7 +212,6 @@ export interface Feedback {
   authorName: string;
   authorEmail: string;
 }
-
 export type NpsCategory = 'detracteur' | 'passif' | 'promoteur';
 
 // Résultat agrégé du calcul de NPS, consommé par le tableau de bord.

@@ -6,6 +6,7 @@ import {
   fetchPipelineStages,
   updateOpportunity,
 } from '../services/crmService';
+import type { UserRef } from '@/shared/types';
 import { publishPipelineEvent } from '../services/pipelineEvents';
 import { crmKeys } from './crmKeys';
 import type {
@@ -230,6 +231,43 @@ export function useDeleteOpportunity() {
         opportunityId: id,
       });
     },
+
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: crmKeys.opportunities() });
+    },
+  });
+
+  return {
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    isPending: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+  };
+}
+
+// Réassignation d'une opportunité à un autre commercial.
+// Mise à jour optimiste : le changement de responsable est immédiat à l'écran.
+export function useAssignOpportunity() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation<
+    Opportunity,
+    Error,
+    { id: number; owner: UserRef },
+    MutationContext
+  >({
+    mutationFn: ({ id, owner }) => updateOpportunity({ id, owner }),
+
+    onMutate: async ({ id, owner }) => {
+      await queryClient.cancelQueries({ queryKey: crmKeys.opportunities() });
+
+      return patchCachedLists(queryClient, (items) =>
+        items.map((item) => (item.id === id ? { ...item, owner } : item)),
+      );
+    },
+
+    onError: (_error, _payload, context) => restore(queryClient, context),
 
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: crmKeys.opportunities() });

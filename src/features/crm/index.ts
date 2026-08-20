@@ -6,7 +6,9 @@ export {
   useCreateOpportunity,
   useUpdateOpportunity,
   useDeleteOpportunity,
+  useAssignOpportunity,
 } from './hooks/useOpportunities';
+export { SALES_REPS, getSalesRepById, groupByOwner, getOpenCountByOwner } from './hooks/salesReps';
 export { useFeedback, useNps } from './hooks/useFeedback';
 export { deriveScore, toFeedback } from './hooks/feedbackMapper';
 export { usePipelineObserver } from './hooks/usePipelineObserver';
