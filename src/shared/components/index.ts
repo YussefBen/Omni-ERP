@@ -5,3 +5,5 @@ export { Toast } from './Toast/Toast';
 export type { ToastVariant } from './Toast/Toast';
 export { Spinner } from './Spinner/Spinner';
 export { Skeleton } from './Skeleton/Skeleton';
+export { withLoading } from './withLoading';
+export type { WithLoadingProps } from './withLoading';
