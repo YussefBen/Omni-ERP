@@ -7,6 +7,14 @@ export {
   useDeleteOpportunity,
 } from './hooks/useOpportunities';
 export { useFeedback, useNps, useCreateFeedback } from './hooks/useFeedback';
+export { usePipelineObserver } from './hooks/usePipelineObserver';
+export {
+  getPipelineEvents,
+  getStageChanges,
+  getEventsForOpportunity,
+  publishPipelineEvent,
+} from './services/pipelineEvents';
+export type { PipelineEvent, PipelineEventType } from './services/pipelineEvents';
 
 export {
   canMoveTo,
