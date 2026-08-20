@@ -1,7 +1,7 @@
 // Affiche un Spinner pendant le chargement, ou une erreur, sinon le composant normal
 
 import type { ComponentType } from 'react';
-import { Spinner } from './Spinner/Spinner';
+import { Spinner } from '../Spinner/Spinner';
 
 export interface WithLoadingProps {
   isLoading?: boolean;
