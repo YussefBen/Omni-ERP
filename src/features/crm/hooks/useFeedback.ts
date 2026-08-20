@@ -1,11 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+// Hooks du feedback client : lecture et indicateurs de satisfaction.
+// Source JSONPlaceholder /comments, en lecture seule.
+
+import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { createFeedback, fetchFeedback } from '../services/crmService';
+import { fetchFeedback } from '../services/crmService';
 import { crmKeys } from './crmKeys';
 import { computeNps, getAverageScore, getScoreDistribution } from './npsLogic';
 import type { Feedback, NpsSummary } from '../types';
-
-type CreateFeedbackPayload = Omit<Feedback, 'id' | 'createdAt'>;
 
 interface UseFeedbackResult {
   data: Feedback[] | undefined;
@@ -15,10 +16,13 @@ interface UseFeedbackResult {
   refetch: () => void;
 }
 
+// Feedback de tous les clients, ou d'un seul si un identifiant est fourni.
 export function useFeedback(clientId?: number): UseFeedbackResult {
   const query = useQuery({
     queryKey: crmKeys.feedback(clientId),
     queryFn: () => fetchFeedback(clientId),
+    // Les scores étant dérivés de façon déterministe, les données ne bougent pas.
+    staleTime: 1000 * 60 * 30,
   });
 
   return {
@@ -40,6 +44,8 @@ interface UseNpsResult {
   refetch: () => void;
 }
 
+// Indicateurs de satisfaction dérivés du feedback. Les calculs sont mémoïsés :
+// ils ne sont refaits que lorsque les données changent, pas à chaque rendu.
 export function useNps(clientId?: number): UseNpsResult {
   const { data, isLoading, isError, error, refetch } = useFeedback(clientId);
 
@@ -48,23 +54,4 @@ export function useNps(clientId?: number): UseNpsResult {
   const distribution = useMemo(() => (data ? getScoreDistribution(data) : []), [data]);
 
   return { data: summary, averageScore, distribution, isLoading, isError, error, refetch };
-}
-
-export function useCreateFeedback() {
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation<Feedback, Error, CreateFeedbackPayload>({
-    mutationFn: createFeedback,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: crmKeys.all });
-    },
-  });
-
-  return {
-    mutate: mutation.mutate,
-    mutateAsync: mutation.mutateAsync,
-    isPending: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-  };
 }

@@ -7,6 +7,7 @@ import {
   summarizePurchases,
   toPurchase,
 } from '../hooks/clientLogic';
+import { toFeedback } from '../hooks/feedbackMapper';
 import type {
   Client,
   ClientDetail,
@@ -23,10 +24,12 @@ import type {
   PurchaseSummary,
   UpdateClientStatusPayload,
   UpdateOpportunityPayload,
+  JsonPlaceholderComment,
 } from '../types';
 
 const clientsApi = axios.create({ baseURL: API_CONFIG.dummyJson, timeout: 10000 });
 const localApi = axios.create({ baseURL: API_CONFIG.jsonServer, timeout: 10000 });
+const feedbackApi = axios.create({ baseURL: API_CONFIG.jsonPlaceholder, timeout: 10000 });
 
 // Champs réellement exploités par le CRM : on ignore le reste de la réponse DummyJSON,
 // qui contient des données sensibles (mot de passe, coordonnées bancaires, SSN).
@@ -205,19 +208,12 @@ export async function deleteOpportunity(id: number): Promise<number> {
 
 /* ---------- Feedback ---------- */
 
+// Source imposée par le brief : JSONPlaceholder /comments, en lecture seule.
+// L'API n'expose aucune note, le score est dérivé de l'identifiant du commentaire.
 export async function fetchFeedback(clientId?: number): Promise<Feedback[]> {
-  const { data } = await localApi.get<Feedback[]>('/feedback', {
-    params: clientId ? { clientId } : undefined,
+  const { data } = await feedbackApi.get<JsonPlaceholderComment[]>('/comments', {
+    // Le postId sert de rattachement client.
+    params: clientId ? { postId: clientId } : undefined,
   });
-  return data;
-}
-
-export async function createFeedback(
-  payload: Omit<Feedback, 'id' | 'createdAt'>,
-): Promise<Feedback> {
-  const { data } = await localApi.post<Feedback>('/feedback', {
-    ...payload,
-    createdAt: new Date().toISOString(),
-  });
-  return data;
+  return data.map(toFeedback);
 }

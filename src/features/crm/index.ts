@@ -7,7 +7,8 @@ export {
   useUpdateOpportunity,
   useDeleteOpportunity,
 } from './hooks/useOpportunities';
-export { useFeedback, useNps, useCreateFeedback } from './hooks/useFeedback';
+export { useFeedback, useNps } from './hooks/useFeedback';
+export { deriveScore, toFeedback } from './hooks/feedbackMapper';
 export { usePipelineObserver } from './hooks/usePipelineObserver';
 export {
   getPipelineEvents,
