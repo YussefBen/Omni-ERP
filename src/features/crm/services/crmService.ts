@@ -1,16 +1,27 @@
 import axios from 'axios';
 import { API_CONFIG } from '@/shared/config/api';
 import { DEFAULT_PAGE_SIZE } from '@/shared/config/constants';
+import {
+  getDefaultStatus,
+  getSegment,
+  summarizePurchases,
+  toPurchase,
+} from '../hooks/clientLogic';
 import type {
   Client,
+  ClientDetail,
   ClientFilters,
+  ClientProfile,
   CreateOpportunityPayload,
+  DummyJsonCart,
   DummyJsonList,
   DummyJsonUser,
   Feedback,
   Opportunity,
   PaginatedClients,
   PipelineStage,
+  PurchaseSummary,
+  UpdateClientStatusPayload,
   UpdateOpportunityPayload,
 } from '../types';
 
@@ -24,7 +35,12 @@ const CLIENT_FIELDS = 'firstName,lastName,email,phone,image,company,address,role
 /* ---------- Clients ---------- */
 
 // Convertit la réponse brute de DummyJSON en client normalisé.
-function toClient(user: DummyJsonUser): Client {
+// Le statut vient de db.json, le segment se calcule depuis les achats.
+function toClient(
+  user: DummyJsonUser,
+  summary: PurchaseSummary,
+  profile?: ClientProfile,
+): Client {
   return {
     id: user.id,
     fullName: `${user.firstName} ${user.lastName}`,
@@ -36,7 +52,32 @@ function toClient(user: DummyJsonUser): Client {
     department: user.company?.department ?? '',
     city: user.address?.city ?? '',
     country: user.address?.country ?? '',
+    status: profile?.status ?? getDefaultStatus(summary.orderCount),
+    segment: getSegment(summary.totalSpent),
+    totalSpent: summary.totalSpent,
+    orderCount: summary.orderCount,
   };
+}
+
+// Tous les paniers en un appel, indexés par client : évite une requête
+// par ligne de la liste, qui saturerait l'API à chaque changement de page.
+async function fetchCartsByUser(): Promise<Map<number, DummyJsonCart[]>> {
+  const { data } = await clientsApi.get<DummyJsonList<DummyJsonCart>>('/carts', {
+    params: { limit: 0 },
+  });
+
+  const index = new Map<number, DummyJsonCart[]>();
+  for (const cart of data.carts ?? []) {
+    const existing = index.get(cart.userId);
+    if (existing) existing.push(cart);
+    else index.set(cart.userId, [cart]);
+  }
+  return index;
+}
+
+async function fetchClientProfiles(): Promise<Map<number, ClientProfile>> {
+  const { data } = await localApi.get<ClientProfile[]>('/clientProfiles');
+  return new Map(data.map((profile) => [profile.clientId, profile]));
 }
 
 // Liste paginée des clients. Un terme de recherche bascule sur l'endpoint dédié,
@@ -47,28 +88,70 @@ export async function fetchClients(filters: ClientFilters = {}): Promise<Paginat
   const search = filters.search?.trim();
 
   const path = search ? '/users/search' : '/users';
-  const { data } = await clientsApi.get<DummyJsonList<DummyJsonUser>>(path, {
-    params: {
-      limit: pageSize,
-      skip: (page - 1) * pageSize,
-      select: CLIENT_FIELDS,
-      ...(search ? { q: search } : {}),
-    },
-  });
+
+  const [usersResponse, cartsByUser, profiles] = await Promise.all([
+    clientsApi.get<DummyJsonList<DummyJsonUser>>(path, {
+      params: {
+        limit: pageSize,
+        skip: (page - 1) * pageSize,
+        select: CLIENT_FIELDS,
+        ...(search ? { q: search } : {}),
+      },
+    }),
+    fetchCartsByUser(),
+    fetchClientProfiles(),
+  ]);
+
+  const items = (usersResponse.data.users ?? []).map((user) =>
+    toClient(
+      user,
+      summarizePurchases(cartsByUser.get(user.id) ?? []),
+      profiles.get(user.id),
+    ),
+  );
+
+  return { items, total: usersResponse.data.total, page, pageSize };
+}
+
+// Fiche client complète, avec le détail de chaque commande.
+export async function fetchClientById(id: number): Promise<ClientDetail> {
+  const [userResponse, cartsResponse, profiles] = await Promise.all([
+    clientsApi.get<DummyJsonUser>(`/users/${id}`, { params: { select: CLIENT_FIELDS } }),
+    clientsApi.get<DummyJsonList<DummyJsonCart>>(`/carts/user/${id}`),
+    fetchClientProfiles(),
+  ]);
+
+  const carts = cartsResponse.data.carts ?? [];
+  const summary = summarizePurchases(carts);
 
   return {
-    items: (data.users ?? []).map(toClient),
-    total: data.total,
-    page,
-    pageSize,
+    ...toClient(userResponse.data, summary, profiles.get(id)),
+    purchases: carts.map(toPurchase),
   };
 }
 
-export async function fetchClientById(id: number): Promise<Client> {
-  const { data } = await clientsApi.get<DummyJsonUser>(`/users/${id}`, {
-    params: { select: CLIENT_FIELDS },
+// Qualification manuelle d'un client. Crée le profil s'il n'existe pas encore.
+export async function updateClientStatus({
+  clientId,
+  status,
+  notes,
+}: UpdateClientStatusPayload): Promise<ClientProfile> {
+  const { data: existing } = await localApi.get<ClientProfile[]>('/clientProfiles', {
+    params: { clientId },
   });
-  return toClient(data);
+
+  const payload = { clientId, status, notes, updatedAt: new Date().toISOString() };
+
+  if (existing.length > 0) {
+    const { data } = await localApi.patch<ClientProfile>(
+      `/clientProfiles/${existing[0].id}`,
+      payload,
+    );
+    return data;
+  }
+
+  const { data } = await localApi.post<ClientProfile>('/clientProfiles', payload);
+  return data;
 }
 
 /* ---------- Pipeline de vente ---------- */

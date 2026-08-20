@@ -60,5 +60,19 @@
     { "id": 28, "clientId": 28, "score": 10, "comment": "Solution parfaitement adaptée à notre métier.", "createdAt": "2026-08-11T10:40:00.000Z" },
     { "id": 29, "clientId": 29, "score": 8, "comment": "Bon suivi de projet.", "createdAt": "2026-08-13T16:15:00.000Z" },
     { "id": 30, "clientId": 30, "score": 9, "comment": "Prise en main rapide par nos équipes.", "createdAt": "2026-08-15T09:50:00.000Z" }
+  ],
+  "clientProfiles": [
+    { "id": 1, "clientId": 1, "status": "Active", "notes": "Compte stratégique, renouvellement annuel.", "updatedAt": "2026-08-01T09:00:00.000Z" },
+    { "id": 2, "clientId": 3, "status": "Active", "notes": "", "updatedAt": "2026-07-22T14:30:00.000Z" },
+    { "id": 3, "clientId": 5, "status": "Lead", "notes": "Contact entrant via le salon de juin.", "updatedAt": "2026-07-18T10:15:00.000Z" },
+    { "id": 4, "clientId": 6, "status": "Churned", "notes": "Résiliation suite aux incidents non résolus.", "updatedAt": "2026-07-30T16:00:00.000Z" },
+    { "id": 5, "clientId": 9, "status": "Active", "notes": "", "updatedAt": "2026-08-05T11:20:00.000Z" },
+    { "id": 6, "clientId": 10, "status": "Inactive", "notes": "Aucune commande depuis huit mois.", "updatedAt": "2026-06-28T09:45:00.000Z" },
+    { "id": 7, "clientId": 12, "status": "Active", "notes": "", "updatedAt": "2026-08-08T13:00:00.000Z" },
+    { "id": 8, "clientId": 14, "status": "Lead", "notes": "En attente de la proposition CRM multi-sites.", "updatedAt": "2026-08-12T15:30:00.000Z" },
+    { "id": 9, "clientId": 16, "status": "Churned", "notes": "Parti chez un concurrent sur le prix.", "updatedAt": "2026-07-25T10:00:00.000Z" },
+    { "id": 10, "clientId": 20, "status": "Active", "notes": "", "updatedAt": "2026-08-15T09:10:00.000Z" },
+    { "id": 11, "clientId": 22, "status": "Lead", "notes": "Premier contact en août.", "updatedAt": "2026-08-10T16:40:00.000Z" },
+    { "id": 12, "clientId": 26, "status": "Inactive", "notes": "Budget gelé jusqu'au prochain exercice.", "updatedAt": "2026-07-12T14:00:00.000Z" }
   ]
 }

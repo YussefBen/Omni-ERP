@@ -1,4 +1,5 @@
-export { useClients, useClient } from './hooks/useClients';
+export { useClients, useClient, useUpdateClientStatus } from './hooks/useClients';
+export { getSegment, getDefaultStatus, summarizePurchases } from './hooks/clientLogic';
 export {
   usePipelineStages,
   useOpportunities,
