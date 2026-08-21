@@ -2,6 +2,18 @@
 
 export { useKPIs } from './hooks/useKPIs';
 export { useAnalytics } from './hooks/useAnalytics';
+export { useExport } from './hooks/useExport';
+
+export {
+  exportToCsv,
+  exportToPdf,
+  flattenDashboard,
+  toCsv,
+  KPI_COLUMNS,
+  TIME_SERIES_COLUMNS,
+  CATEGORY_COLUMNS,
+} from './services/exportService';
+export type { ExportColumn } from './services/exportService';
 
 export {
   buildKpi,
