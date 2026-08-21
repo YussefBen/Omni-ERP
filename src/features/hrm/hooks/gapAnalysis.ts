@@ -1,4 +1,4 @@
-// Compare des compétences demandées à ce qui est dispo dans l'équipe
+// Compare des compétences demandées à ce qui est dispo dans l'équipe   
 import type { Employee, SkillGapEntry } from '../types';
 
 export function getSkillGapAnalysis(
