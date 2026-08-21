@@ -15,9 +15,9 @@ import {
   buildSalesKpis,
   buildStockKpis,
 } from './kpiBuilders';
-// Sources temporaires : à remplacer par getProjectsKPI et getHRKPI
-// du Membre A dès qu'ils sont livrés. Aucun autre import ne changera.
-import { getMockHRKPI, getMockProjectsKPI } from './mockPartnerKpis';
+import { getHRKPI } from '@/features/hrm';
+// Source temporaire : à remplacer par getProjectsKPI dès sa livraison.
+import { getMockProjectsKPI } from './mockPartnerKpis';
 import type { KpiDashboard, PeriodPreset } from '../types';
 
 interface UseKpisResult {
@@ -32,10 +32,23 @@ interface UseKpisResult {
 // sur l'ensemble de la période, pas sur la page affichée à l'écran.
 const ALL_ORDERS_FILTERS = { page: 1, pageSize: 1000 };
 
+// Les indicateurs RH sont exposés par le domaine HRM sous forme asynchrone :
+// les deux périodes sont chargées ensemble et mises en cache.
+const HR_KPI_KEY = ['bi', 'hrKpi'] as const;
+
 export function useKPIs(preset: PeriodPreset = 'trois-mois'): UseKpisResult {
   const ordersQuery = useQuery({
     queryKey: erpKeys.orderList(ALL_ORDERS_FILTERS),
     queryFn: () => fetchOrders(ALL_ORDERS_FILTERS),
+  });
+
+   const hrQuery = useQuery({
+    queryKey: HR_KPI_KEY,
+    queryFn: async () => {
+      const [current, previous] = await Promise.all([getHRKPI(), getHRKPI(true)]);
+      return { current, previous };
+    },
+    staleTime: 1000 * 60 * 5,
   });
 
   const catalog = useProductCatalog();
@@ -44,11 +57,12 @@ export function useKPIs(preset: PeriodPreset = 'trois-mois'): UseKpisResult {
   const stages = usePipelineStages();
   const feedback = useFeedback();
 
-  const sources = [ordersQuery, catalog, movements, opportunities, stages, feedback];
+    const sources = [ordersQuery, hrQuery, catalog, movements, opportunities, stages, feedback];
 
   const data = useMemo<KpiDashboard | undefined>(() => {
-    if (
+        if (
       !ordersQuery.data ||
+      !hrQuery.data ||
       !catalog.data ||
       !movements.data ||
       !opportunities.data ||
@@ -70,12 +84,13 @@ export function useKPIs(preset: PeriodPreset = 'trois-mois'): UseKpisResult {
         range.current,
         range.previous,
       ),
-      projects: buildProjectsKpis(getMockProjectsKPI(), getMockProjectsKPI(true)),
-      hr: buildHrKpis(getMockHRKPI(), getMockHRKPI(true)),
+        projects: buildProjectsKpis(getMockProjectsKPI(), getMockProjectsKPI(true)),
+            hr: buildHrKpis(hrQuery.data.current, hrQuery.data.previous),
       range,
     };
-  }, [
+    }, [
     ordersQuery.data,
+    hrQuery.data,
     catalog.data,
     movements.data,
     opportunities.data,
