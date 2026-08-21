@@ -1,5 +1,4 @@
 // Département/équipe/compétences inventés depuis l'id, pas de vraie source
-
 import type { EmployeeSkill, SkillLevel } from '../types';
 
 const DEPARTMENTS = ['Développement', 'RH', 'Ventes', 'Support'];
