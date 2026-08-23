@@ -4,3 +4,4 @@ export const TOAST_DURATION_MS = 4000;
 export const DEBOUNCE_DELAY_MS = 350;
 export const THEME_STORAGE_KEY = 'omnierp-theme';
 export const AUTH_STORAGE_KEY = 'omnierp-auth';
+export const SETTINGS_STORAGE_KEY = 'omnierp-settings';
