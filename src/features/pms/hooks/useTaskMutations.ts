@@ -3,13 +3,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createTask, deleteTask, updateTask } from '../services/pmsService';
 import { pmsKeys } from './pmsKeys';
-import type { CreateTaskPayload, PaginatedTasks, Task, UpdateTaskPayload } from '../types';
+import type { PaginatedTasks, UpdateTaskPayload } from '../types';
 
 // Nouvelle tâche, toujours 100% locale
 export function useCreateTask() {
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<Task, Error, CreateTaskPayload>({
+  const mutation = useMutation({
     mutationFn: createTask,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: pmsKeys.tasksRoot() });
@@ -29,14 +29,9 @@ export function useCreateTask() {
 export function useUpdateTask() {
   const queryClient = useQueryClient();
 
-  const mutation = useMutation
-    unknown,
-    Error,
-    UpdateTaskPayload,
-    { previous: Array<[readonly unknown[], PaginatedTasks | undefined]> }
-  >({
+  const mutation = useMutation({
     mutationFn: updateTask,
-    onMutate: async (payload) => {
+    onMutate: async (payload: UpdateTaskPayload) => {
       await queryClient.cancelQueries({ queryKey: pmsKeys.tasksRoot() });
 
       const previous = queryClient.getQueriesData<PaginatedTasks>({
@@ -76,7 +71,7 @@ export function useUpdateTask() {
 export function useDeleteTask() {
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<void, Error, number>({
+  const mutation = useMutation({
     mutationFn: deleteTask,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: pmsKeys.tasksRoot() });
