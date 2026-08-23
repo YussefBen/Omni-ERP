@@ -1,5 +1,4 @@
 // Tâches d'un projet (ou toutes), paginées
-
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { DEFAULT_PAGE_SIZE } from '@/shared/config/constants';
 import { fetchTasks } from '../services/pmsService';
