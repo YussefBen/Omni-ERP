@@ -1,19 +1,15 @@
 // Créer, modifier, supprimer un projet
+
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createProject, deleteProject, updateProject } from '../services/pmsService';
 import { pmsKeys } from './pmsKeys';
-import type {
-  CreateProjectPayload,
-  PaginatedProjects,
-  Project,
-  UpdateProjectPayload,
-} from '../types';
+import type { PaginatedProjects, UpdateProjectPayload } from '../types';
 
 // Nouveau projet, toujours 100% local
 export function useCreateProject() {
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<Project, Error, CreateProjectPayload>({
+  const mutation = useMutation({
     mutationFn: createProject,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: pmsKeys.projectsRoot() });
@@ -33,14 +29,9 @@ export function useCreateProject() {
 export function useUpdateProject() {
   const queryClient = useQueryClient();
 
-  const mutation = useMutation
-    unknown,
-    Error,
-    UpdateProjectPayload,
-    { previous: Array<[readonly unknown[], PaginatedProjects | undefined]> }
-  >({
+  const mutation = useMutation({
     mutationFn: updateProject,
-    onMutate: async (payload) => {
+    onMutate: async (payload: UpdateProjectPayload) => {
       await queryClient.cancelQueries({ queryKey: pmsKeys.projectsRoot() });
 
       const previous = queryClient.getQueriesData<PaginatedProjects>({
@@ -81,7 +72,7 @@ export function useUpdateProject() {
 export function useDeleteProject() {
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<void, Error, number>({
+  const mutation = useMutation({
     mutationFn: deleteProject,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: pmsKeys.projectsRoot() });
