@@ -2,6 +2,7 @@
 // L'API ne fournit aucune note : on en calcule une à partir de l'identifiant.
 
 import type { Feedback, JsonPlaceholderComment } from '../types';
+import { sanitizeText } from '@/shared/utils/sanitize';
 
 // Hash entier 32 bits, sans état ni aléatoire : le commentaire 42 donne
 // toujours le même score, sinon le NPS changerait à chaque rafraîchissement.
@@ -27,7 +28,9 @@ function toExcerpt(body: string): string {
   const flat = body.replace(/\s+/g, ' ').trim();
   const firstSentence = flat.split(/[.!?]/)[0];
   const excerpt = firstSentence.length > 10 ? firstSentence : flat;
-  return excerpt.length > 140 ? `${excerpt.slice(0, 137)}...` : excerpt;
+  const truncated = excerpt.length > 140 ? `${excerpt.slice(0, 137)}...` : excerpt;
+  // Contenu d'une API externe : traité comme non fiable.
+  return sanitizeText(truncated);
 }
 
 // Le postId sert de rattachement client : les 100 posts couvrent
