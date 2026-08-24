@@ -2,6 +2,7 @@ import axios from 'axios';
 import { API_CONFIG } from '@/shared/config/api';
 import { DEFAULT_PAGE_SIZE } from '@/shared/config/constants';
 import { sanitizeText } from '@/shared/utils/sanitize';
+import { attachCsrfProtection } from '@/features/security/services/csrf';
 import {
   getDefaultStatus,
   getSegment,
@@ -31,7 +32,9 @@ import type {
 const clientsApi = axios.create({ baseURL: API_CONFIG.dummyJson, timeout: 10000 });
 const localApi = axios.create({ baseURL: API_CONFIG.jsonServer, timeout: 10000 });
 const feedbackApi = axios.create({ baseURL: API_CONFIG.jsonPlaceholder, timeout: 10000 });
-
+// Protection CSRF sur les instances qui émettent des mutations.
+attachCsrfProtection(clientsApi);
+attachCsrfProtection(localApi);
 // Champs réellement exploités par le CRM : on ignore le reste de la réponse DummyJSON,
 // qui contient des données sensibles (mot de passe, coordonnées bancaires, SSN).
 const CLIENT_FIELDS = 'firstName,lastName,email,phone,image,company,address,role';

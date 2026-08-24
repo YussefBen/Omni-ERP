@@ -4,6 +4,7 @@
 import axios from 'axios';
 import { API_CONFIG } from '@/shared/config/api';
 import { sanitizeText } from '@/shared/utils/sanitize';
+import { attachCsrfProtection } from './csrf';
 import type {
   AuditEntry,
   AuditFilters,
@@ -12,7 +13,7 @@ import type {
 } from '../types';
 
 const auditApi = axios.create({ baseURL: API_CONFIG.jsonServer, timeout: 10000 });
-
+attachCsrfProtection(auditApi);
 const DEFAULT_AUDIT_PAGE_SIZE = 25;
 
 /**

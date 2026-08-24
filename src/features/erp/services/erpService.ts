@@ -6,6 +6,7 @@ import axios from 'axios';
 import { API_CONFIG } from '@/shared/config/api';
 import { DEFAULT_PAGE_SIZE } from '@/shared/config/constants';
 import { sanitizeText } from '@/shared/utils/sanitize';
+import { attachCsrfProtection } from '@/features/security/services/csrf';
 import { toOrder, toProduct, toSupplier } from '../hooks/erpMappers';
 import type {
   CreateStockMovementPayload,
@@ -29,7 +30,7 @@ import type {
 
 const catalogApi = axios.create({ baseURL: API_CONFIG.dummyJson, timeout: 10000 });
 const localApi = axios.create({ baseURL: API_CONFIG.jsonServer, timeout: 10000 });
-
+attachCsrfProtection(localApi);
 // Champs réellement exploités : on écarte reviews, images et meta,
 // qui alourdissent la réponse sans servir aux écrans de gestion.
 const PRODUCT_FIELDS =
