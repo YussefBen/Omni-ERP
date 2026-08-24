@@ -16,8 +16,7 @@ import {
   buildStockKpis,
 } from './kpiBuilders';
 import { getHRKPI } from '@/features/hrm';
-// Source temporaire : à remplacer par getProjectsKPI dès sa livraison.
-import { getMockProjectsKPI } from './mockPartnerKpis';
+import { getProjectsKPI } from '@/features/pms';
 import type { KpiDashboard, PeriodPreset } from '../types';
 
 interface UseKpisResult {
@@ -35,6 +34,7 @@ const ALL_ORDERS_FILTERS = { page: 1, pageSize: 1000 };
 // Les indicateurs RH sont exposés par le domaine HRM sous forme asynchrone :
 // les deux périodes sont chargées ensemble et mises en cache.
 const HR_KPI_KEY = ['bi', 'hrKpi'] as const;
+const PROJECTS_KPI_KEY = ['bi', 'projectsKpi'] as const;
 
 export function useKPIs(preset: PeriodPreset = 'trois-mois'): UseKpisResult {
   const ordersQuery = useQuery({
@@ -51,18 +51,31 @@ export function useKPIs(preset: PeriodPreset = 'trois-mois'): UseKpisResult {
     staleTime: 1000 * 60 * 5,
   });
 
+    const projectsQuery = useQuery({
+    queryKey: PROJECTS_KPI_KEY,
+    queryFn: async () => {
+      const [current, previous] = await Promise.all([
+        getProjectsKPI(),
+        getProjectsKPI(true),
+      ]);
+      return { current, previous };
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
   const catalog = useProductCatalog();
   const movements = useStockMovements();
   const opportunities = useOpportunities();
   const stages = usePipelineStages();
   const feedback = useFeedback();
 
-    const sources = [ordersQuery, hrQuery, catalog, movements, opportunities, stages, feedback];
+const sources = [ordersQuery, hrQuery, projectsQuery, catalog, movements, opportunities, stages, feedback];
 
   const data = useMemo<KpiDashboard | undefined>(() => {
         if (
-      !ordersQuery.data ||
+            !ordersQuery.data ||
       !hrQuery.data ||
+      !projectsQuery.data ||
       !catalog.data ||
       !movements.data ||
       !opportunities.data ||
@@ -84,13 +97,14 @@ export function useKPIs(preset: PeriodPreset = 'trois-mois'): UseKpisResult {
         range.current,
         range.previous,
       ),
-        projects: buildProjectsKpis(getMockProjectsKPI(), getMockProjectsKPI(true)),
+              projects: buildProjectsKpis(projectsQuery.data.current, projectsQuery.data.previous),
             hr: buildHrKpis(hrQuery.data.current, hrQuery.data.previous),
       range,
     };
     }, [
-    ordersQuery.data,
+        ordersQuery.data,
     hrQuery.data,
+    projectsQuery.data,
     catalog.data,
     movements.data,
     opportunities.data,
