@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_CONFIG } from '@/shared/config/api';
 import { DEFAULT_PAGE_SIZE } from '@/shared/config/constants';
+import { sanitizeText } from '@/shared/utils/sanitize';
 import {
   getDefaultStatus,
   getSegment,
@@ -8,7 +9,6 @@ import {
   toPurchase,
 } from '../hooks/clientLogic';
 import { toFeedback } from '../hooks/feedbackMapper';
-import { sanitizeText } from '@/shared/utils/sanitize';
 import type {
   Client,
   ClientDetail,

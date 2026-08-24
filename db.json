@@ -151,5 +151,6 @@
     {"id": 43, "productId": 122, "type": "sortie", "quantity": 13, "reason": "Sortie atelier", "orderId": 24, "occurredAt": "2026-08-22T18:12:00.000Z"},
     {"id": 44, "productId": 102, "type": "sortie", "quantity": 6, "reason": "Sortie atelier", "orderId": 3, "occurredAt": "2026-08-23T18:33:00.000Z"},
     {"id": 45, "productId": 88, "type": "entree", "quantity": 20, "reason": "Retour client remis en stock", "occurredAt": "2026-08-27T12:13:00.000Z"}
-  ]
+    ],
+  "auditLog": []
 }
