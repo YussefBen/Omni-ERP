@@ -6,6 +6,7 @@ import axios from 'axios';
 import { API_CONFIG } from '@/shared/config/api';
 import { DEFAULT_PAGE_SIZE } from '@/shared/config/constants';
 import { toOrder, toProduct, toSupplier } from '../hooks/erpMappers';
+import { sanitizeText } from '@/shared/utils/sanitize';
 import type {
   CreateStockMovementPayload,
   DummyJsonCart,
@@ -193,7 +194,8 @@ export async function evaluateSupplier({
   const evaluation: SupplierEvaluation = {
     id: Math.max(0, ...evaluations.map((e) => e.id)) + 1,
     score,
-    comment,
+    // Commentaire libre : nettoyé avant stockage.
+    comment: comment ? sanitizeText(comment) : comment,
     createdAt: new Date().toISOString(),
   };
 
@@ -218,6 +220,7 @@ export async function createStockMovement(
 ): Promise<StockMovement> {
   const { data } = await localApi.post<StockMovement>('/stockMovements', {
     ...payload,
+    reason: sanitizeText(payload.reason),
     occurredAt: new Date().toISOString(),
   });
   return data;

@@ -8,6 +8,7 @@ import {
   toPurchase,
 } from '../hooks/clientLogic';
 import { toFeedback } from '../hooks/feedbackMapper';
+import { sanitizeText } from '@/shared/utils/sanitize';
 import type {
   Client,
   ClientDetail,
@@ -143,7 +144,12 @@ export async function updateClientStatus({
     params: { clientId },
   });
 
-  const payload = { clientId, status, notes, updatedAt: new Date().toISOString() };
+ const payload = {
+    clientId,
+    status,
+    notes: notes ? sanitizeText(notes) : notes,
+    updatedAt: new Date().toISOString(),
+  };
 
   if (existing.length > 0) {
     const { data } = await localApi.patch<ClientProfile>(

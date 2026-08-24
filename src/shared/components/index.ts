@@ -7,3 +7,4 @@ export { Spinner } from './Spinner/Spinner';
 export { Skeleton } from './Skeleton/Skeleton';
 export { withLoading } from './withLoading/withLoading';
 export type { WithLoadingProps } from './withLoading/withLoading';
+export { SafeHtml } from './SafeHtml';
