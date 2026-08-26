@@ -213,10 +213,16 @@ const jsonServerHandlers = [
 
   http.get(`${LOCAL}/suppliers`, () => HttpResponse.json(mockSuppliers)),
 
+  // Comme pour les opportunités, le handler conserve la modification :
+  // l'invalidation qui suit la mutation rechargerait sinon l'état d'origine.
   http.patch(`${LOCAL}/suppliers/:id`, async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
-    const existing = mockSuppliers.find((s) => s.id === Number(params.id));
-    return HttpResponse.json({ ...existing, ...body });
+    const index = mockSuppliers.findIndex((s) => s.id === Number(params.id));
+
+    if (index === -1) return new HttpResponse(null, { status: 404 });
+
+    mockSuppliers[index] = { ...mockSuppliers[index], ...body };
+    return HttpResponse.json(mockSuppliers[index]);
   }),
 
   http.get(`${LOCAL}/stockMovements`, ({ request }) =>
