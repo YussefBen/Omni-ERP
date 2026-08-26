@@ -5,6 +5,7 @@ import { cleanup } from '@testing-library/react';
 // Étend expect avec les assertions de Testing Library (toBeInTheDocument, etc.)
 import '@testing-library/jest-dom/vitest';
 import { server } from '@/shared/mocks/server';
+import { resetFixtures } from '@/shared/mocks/fixtures';
 
 // Une requête non interceptée signale un appel réseau oublié : on la
 // signale plutôt que de la laisser atteindre la vraie API.
@@ -13,6 +14,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
 afterEach(() => {
   // Les surcharges posées par un test ne doivent pas fuir vers le suivant.
   server.resetHandlers();
+  resetFixtures();
   cleanup();
 });
 
