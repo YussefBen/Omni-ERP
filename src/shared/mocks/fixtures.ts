@@ -344,3 +344,12 @@ export const mockStockMovements: StockMovement[] = [
     occurredAt: '2026-07-12T10:00:00.000Z',
   },
 ];
+
+// Copie de référence des opportunités, pour restaurer l'état initial
+// entre deux tests qui les modifient.
+const opportunitiesSnapshot = mockOpportunities.map((o) => ({ ...o }));
+
+export function resetFixtures(): void {
+  mockOpportunities.length = 0;
+  mockOpportunities.push(...opportunitiesSnapshot.map((o) => ({ ...o })));
+}
