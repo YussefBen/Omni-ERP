@@ -1,0 +1,67 @@
+.card {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 1rem);
+}
+
+.title {
+  margin: 0 0 var(--spacing-sm, 0.5rem);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 0.25rem);
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text, #1a1a1a);
+}
+
+.input {
+  padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--color-surface, #fff);
+  color: var(--color-text, #1a1a1a);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--color-accent, #3b82f6);
+  outline-offset: 2px;
+}
+
+.fieldError {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-danger, #e5484d);
+}
+
+.formError {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-danger, #e5484d);
+}
+
+.lockWarning {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-danger, #e5484d);
+}
+
+.attemptsWarning {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-warning, #f5a623);
+}
+
+.submit {
+  margin-top: var(--spacing-xs, 0.25rem);
+}
