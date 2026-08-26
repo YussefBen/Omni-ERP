@@ -1,0 +1,280 @@
+// Interception des appels réseau pendant les tests.
+// Un handler par source : les tests n'atteignent jamais les vraies API,
+// ce qui les rend rapides, déterministes et indépendants d'Internet.
+
+import { http, HttpResponse } from 'msw';
+import {
+  mockCarts,
+  mockCategories,
+  mockClientProfiles,
+  mockComments,
+  mockOpportunities,
+  mockOrderMeta,
+  mockPipelineStages,
+  mockProducts,
+  mockStockMovements,
+  mockSuppliers,
+  mockUsers,
+} from './fixtures';
+
+const DUMMY = 'https://dummyjson.com';
+const PLACEHOLDER = 'https://jsonplaceholder.typicode.com';
+const LOCAL = 'http://localhost:3001';
+const WEATHER = 'https://api.openweathermap.org/data/2.5';
+
+// Reproduit la pagination de DummyJSON : limit=0 renvoie tout.
+function paginate<T>(items: T[], url: URL, key: string) {
+  const limit = Number(url.searchParams.get('limit') ?? 10);
+  const skip = Number(url.searchParams.get('skip') ?? 0);
+  const page = limit === 0 ? items : items.slice(skip, skip + limit);
+
+  return HttpResponse.json({
+    [key]: page,
+    total: items.length,
+    skip,
+    limit: limit === 0 ? items.length : limit,
+  });
+}
+
+/* ---------- DummyJSON ---------- */
+
+const dummyJsonHandlers = [
+  http.get(`${DUMMY}/users/search`, ({ request }) => {
+    const url = new URL(request.url);
+    const query = (url.searchParams.get('q') ?? '').toLowerCase();
+
+    const found = mockUsers.filter((user) =>
+      `${user.firstName} ${user.lastName} ${user.email}`.toLowerCase().includes(query),
+    );
+
+    return paginate(found, url, 'users');
+  }),
+
+  http.get(`${DUMMY}/users/:id`, ({ params }) => {
+    const user = mockUsers.find((u) => u.id === Number(params.id));
+    return user ? HttpResponse.json(user) : new HttpResponse(null, { status: 404 });
+  }),
+
+  http.get(`${DUMMY}/users`, ({ request }) =>
+    paginate(mockUsers, new URL(request.url), 'users'),
+  ),
+
+  http.get(`${DUMMY}/carts/user/:id`, ({ params, request }) => {
+    const carts = mockCarts.filter((cart) => cart.userId === Number(params.id));
+    return paginate(carts, new URL(request.url), 'carts');
+  }),
+
+  http.get(`${DUMMY}/carts/:id`, ({ params }) => {
+    const cart = mockCarts.find((c) => c.id === Number(params.id));
+    return cart ? HttpResponse.json(cart) : new HttpResponse(null, { status: 404 });
+  }),
+
+  http.get(`${DUMMY}/carts`, ({ request }) =>
+    paginate(mockCarts, new URL(request.url), 'carts'),
+  ),
+
+  http.get(`${DUMMY}/products/category-list`, () => HttpResponse.json(mockCategories)),
+
+  http.get(`${DUMMY}/products/search`, ({ request }) => {
+    const url = new URL(request.url);
+    const query = (url.searchParams.get('q') ?? '').toLowerCase();
+
+    const found = mockProducts.filter((product) =>
+      product.title.toLowerCase().includes(query),
+    );
+
+    return paginate(found, url, 'products');
+  }),
+
+  http.get(`${DUMMY}/products/category/:category`, ({ params, request }) => {
+    const found = mockProducts.filter((product) => product.category === params.category);
+    return paginate(found, new URL(request.url), 'products');
+  }),
+
+  http.get(`${DUMMY}/products/:id`, ({ params }) => {
+    const product = mockProducts.find((p) => p.id === Number(params.id));
+    return product ? HttpResponse.json(product) : new HttpResponse(null, { status: 404 });
+  }),
+
+  http.get(`${DUMMY}/products`, ({ request }) =>
+    paginate(mockProducts, new URL(request.url), 'products'),
+  ),
+];
+
+/* ---------- JSONPlaceholder ---------- */
+
+const placeholderHandlers = [
+  http.get(`${PLACEHOLDER}/comments`, ({ request }) => {
+    const postId = new URL(request.url).searchParams.get('postId');
+
+    const found = postId
+      ? mockComments.filter((comment) => comment.postId === Number(postId))
+      : mockComments;
+
+    return HttpResponse.json(found);
+  }),
+];
+
+/* ---------- JSON Server ---------- */
+
+// Filtre générique sur un paramètre de requête, comme le fait JSON Server.
+function filterByQuery<T extends Record<string, unknown>>(
+  items: T[],
+  url: URL,
+  field: keyof T & string,
+) {
+  const value = url.searchParams.get(field);
+  if (!value) return items;
+
+  return items.filter((item) => String(item[field]) === value);
+}
+
+const jsonServerHandlers = [
+  http.get(`${LOCAL}/pipelineStages`, () => HttpResponse.json(mockPipelineStages)),
+
+  http.get(`${LOCAL}/opportunities`, ({ request }) =>
+    HttpResponse.json(
+      filterByQuery(
+        mockOpportunities as unknown as Array<Record<string, unknown>>,
+        new URL(request.url),
+        'stageId',
+      ),
+    ),
+  ),
+
+  http.get(`${LOCAL}/opportunities/:id`, ({ params }) => {
+    const found = mockOpportunities.find((o) => o.id === Number(params.id));
+    return found ? HttpResponse.json(found) : new HttpResponse(null, { status: 404 });
+  }),
+
+  http.post(`${LOCAL}/opportunities`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ ...body, id: 999 }, { status: 201 });
+  }),
+
+  http.patch(`${LOCAL}/opportunities/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const existing = mockOpportunities.find((o) => o.id === Number(params.id));
+    return HttpResponse.json({ ...existing, ...body });
+  }),
+
+  http.delete(`${LOCAL}/opportunities/:id`, () => new HttpResponse(null, { status: 200 })),
+
+  http.get(`${LOCAL}/clientProfiles`, ({ request }) =>
+    HttpResponse.json(
+      filterByQuery(
+        mockClientProfiles as unknown as Array<Record<string, unknown>>,
+        new URL(request.url),
+        'clientId',
+      ),
+    ),
+  ),
+
+  http.post(`${LOCAL}/clientProfiles`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ ...body, id: 99 }, { status: 201 });
+  }),
+
+  http.patch(`${LOCAL}/clientProfiles/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ ...body, id: Number(params.id) });
+  }),
+
+  http.get(`${LOCAL}/orders`, ({ request }) =>
+    HttpResponse.json(
+      filterByQuery(
+        mockOrderMeta as unknown as Array<Record<string, unknown>>,
+        new URL(request.url),
+        'orderId',
+      ),
+    ),
+  ),
+
+  http.post(`${LOCAL}/orders`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ ...body, id: 99 }, { status: 201 });
+  }),
+
+  http.patch(`${LOCAL}/orders/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ ...body, id: Number(params.id) });
+  }),
+
+  http.get(`${LOCAL}/suppliers/:id`, ({ params }) => {
+    const found = mockSuppliers.find((s) => s.id === Number(params.id));
+    return found ? HttpResponse.json(found) : new HttpResponse(null, { status: 404 });
+  }),
+
+  http.get(`${LOCAL}/suppliers`, () => HttpResponse.json(mockSuppliers)),
+
+  http.patch(`${LOCAL}/suppliers/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const existing = mockSuppliers.find((s) => s.id === Number(params.id));
+    return HttpResponse.json({ ...existing, ...body });
+  }),
+
+  http.get(`${LOCAL}/stockMovements`, ({ request }) =>
+    HttpResponse.json(
+      filterByQuery(
+        mockStockMovements as unknown as Array<Record<string, unknown>>,
+        new URL(request.url),
+        'productId',
+      ),
+    ),
+  ),
+
+  http.post(`${LOCAL}/stockMovements`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ ...body, id: 999 }, { status: 201 });
+  }),
+
+  http.get(`${LOCAL}/auditLog`, () => HttpResponse.json([])),
+  http.post(`${LOCAL}/auditLog`, () => HttpResponse.json({ id: 1 }, { status: 201 })),
+];
+
+/* ---------- OpenWeatherMap ---------- */
+
+const weatherHandlers = [
+  http.get(`${WEATHER}/weather`, () =>
+    HttpResponse.json({
+      weather: [{ id: 804, main: 'Clouds', description: 'couvert', icon: '04d' }],
+      main: { temp: 22.1, feels_like: 21.8, temp_min: 20, temp_max: 23, humidity: 55, pressure: 1010 },
+      wind: { speed: 5, deg: 250 },
+      clouds: { all: 100 },
+      visibility: 10000,
+      dt: 1787252155,
+      sys: { country: 'FR', sunrise: 1787201417, sunset: 1787252241 },
+      timezone: 7200,
+      name: 'Évry',
+    }),
+  ),
+
+  http.get(`${WEATHER}/forecast`, () =>
+    HttpResponse.json({
+      list: [
+        {
+          dt: 1787313600,
+          dt_txt: '2026-08-21 12:00:00',
+          weather: [{ id: 804, main: 'Clouds', description: 'couvert', icon: '04d' }],
+          main: { temp: 21, feels_like: 20, temp_min: 21, temp_max: 22, humidity: 52, pressure: 1011 },
+          wind: { speed: 4, deg: 268 },
+        },
+        {
+          dt: 1787324400,
+          dt_txt: '2026-08-21 15:00:00',
+          weather: [{ id: 500, main: 'Rain', description: 'légère pluie', icon: '10d' }],
+          main: { temp: 24, feels_like: 23, temp_min: 24, temp_max: 25, humidity: 36, pressure: 1010 },
+          wind: { speed: 5, deg: 284 },
+        },
+      ],
+      city: { name: 'Évry', country: 'FR', timezone: 7200 },
+    }),
+  ),
+];
+
+export const handlers = [
+  ...dummyJsonHandlers,
+  ...placeholderHandlers,
+  ...jsonServerHandlers,
+  ...weatherHandlers,
+];
