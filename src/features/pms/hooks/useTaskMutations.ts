@@ -60,7 +60,7 @@ export function useUpdateTask() {
 
   return {
     mutate: mutation.mutate,
-    mutateAsync: mutation.mutateAsync,
+    mutateAsync: mutatsdion.mutateAsync,
     isPending: mutation.isPending,
     isError: mutation.isError,
     error: mutation.error,
