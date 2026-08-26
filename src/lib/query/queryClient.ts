@@ -1,4 +1,5 @@
-import { QueryClient } from '@tanstack/react-query';
+import { MutationCache, QueryClient } from '@tanstack/react-query';
+import { captureException } from '@/features/monitoring';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -8,4 +9,10 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
   },
+  // Toute mutation qui échoue part aussi vers Sentry
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      captureException(error, { source: 'mutation' });
+    },
+  }),
 });
