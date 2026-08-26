@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { captureException } from "@/features/monitoring";
 import styles from "./ErrorBoundary.module.css";
 
 interface ErrorBoundaryProps {
@@ -20,8 +21,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    // À remplacer par un service de monitoring externe si besoin plus tard dans le projet
     console.error("[ErrorBoundary] Erreur de rendu capturée :", error, info.componentStack);
+    captureException(error, { componentStack: info.componentStack });
   }
 
   // Permet de retenter le rendu des enfants sans recharger toute la page
