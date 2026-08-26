@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { usePageViewTracking } from '@/features/monitoring';
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -10,6 +11,7 @@ function PlaceholderPage({ title }: { title: string }) {
 }
 
 export function AppRouter() {
+  usePageViewTracking();
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
