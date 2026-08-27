@@ -11,6 +11,10 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    env: {
+      VITE_OPENWEATHER_API_KEY: 'cle-de-test',
+      VITE_JSON_SERVER_URL: 'http://localhost:3001',
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
