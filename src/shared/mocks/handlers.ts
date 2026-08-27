@@ -152,10 +152,16 @@ const jsonServerHandlers = [
     return HttpResponse.json({ ...body, id: 999 }, { status: 201 });
   }),
 
+  // Le handler conserve la modification : sans cela, l'invalidation qui suit
+  // la mutation rechargerait les données d'origine et écraserait le résultat.
   http.patch(`${LOCAL}/opportunities/:id`, async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
-    const existing = mockOpportunities.find((o) => o.id === Number(params.id));
-    return HttpResponse.json({ ...existing, ...body });
+    const index = mockOpportunities.findIndex((o) => o.id === Number(params.id));
+
+    if (index === -1) return new HttpResponse(null, { status: 404 });
+
+    mockOpportunities[index] = { ...mockOpportunities[index], ...body };
+    return HttpResponse.json(mockOpportunities[index]);
   }),
 
   http.delete(`${LOCAL}/opportunities/:id`, () => new HttpResponse(null, { status: 200 })),
@@ -207,10 +213,16 @@ const jsonServerHandlers = [
 
   http.get(`${LOCAL}/suppliers`, () => HttpResponse.json(mockSuppliers)),
 
+  // Comme pour les opportunités, le handler conserve la modification :
+  // l'invalidation qui suit la mutation rechargerait sinon l'état d'origine.
   http.patch(`${LOCAL}/suppliers/:id`, async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
-    const existing = mockSuppliers.find((s) => s.id === Number(params.id));
-    return HttpResponse.json({ ...existing, ...body });
+    const index = mockSuppliers.findIndex((s) => s.id === Number(params.id));
+
+    if (index === -1) return new HttpResponse(null, { status: 404 });
+
+    mockSuppliers[index] = { ...mockSuppliers[index], ...body };
+    return HttpResponse.json(mockSuppliers[index]);
   }),
 
   http.get(`${LOCAL}/stockMovements`, ({ request }) =>

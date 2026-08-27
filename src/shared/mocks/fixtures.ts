@@ -344,3 +344,25 @@ export const mockStockMovements: StockMovement[] = [
     occurredAt: '2026-07-12T10:00:00.000Z',
   },
 ];
+
+// Copies de référence, pour restaurer l'état initial entre deux tests
+// qui modifient les données. La copie des évaluations est profonde :
+// un tableau partagé garderait les avis ajoutés par le test précédent.
+const opportunitiesSnapshot = mockOpportunities.map((o) => ({ ...o }));
+const suppliersSnapshot = mockSuppliers.map((s) => ({
+  ...s,
+  evaluations: s.evaluations.map((e) => ({ ...e })),
+}));
+
+export function resetFixtures(): void {
+  mockOpportunities.length = 0;
+  mockOpportunities.push(...opportunitiesSnapshot.map((o) => ({ ...o })));
+
+  mockSuppliers.length = 0;
+  mockSuppliers.push(
+    ...suppliersSnapshot.map((s) => ({
+      ...s,
+      evaluations: s.evaluations.map((e) => ({ ...e })),
+    })),
+  );
+}
