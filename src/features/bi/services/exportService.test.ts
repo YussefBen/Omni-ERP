@@ -12,6 +12,23 @@ import {
 import { buildKpi } from '../hooks/kpiLogic';
 import type { KpiDashboard } from '../types';
 
+// jsPDF écrit réellement sur le disque dans cet environnement : on
+// substitue la sauvegarde pour ne pas semer des fichiers à la racine.
+vi.mock('jspdf', async () => {
+  const actual = await vi.importActual<typeof import('jspdf')>('jspdf');
+  const Original = actual.default;
+
+  class JsPdfSansSauvegarde extends Original {}
+  // Surcharge assignée après coup : la signature d'origine est surchargée
+  // et ne peut pas être redéclarée simplement dans la classe.
+  (JsPdfSansSauvegarde.prototype as unknown as { save: () => unknown }).save =
+    function save() {
+      return this;
+    };
+
+  return { default: JsPdfSansSauvegarde };
+});
+
 interface Ligne {
   nom: string;
   montant: number;
