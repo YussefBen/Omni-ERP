@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "server": "json-server db.json --port 3001",
     "test": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "lighthouse": "lhci autorun"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -19,6 +20,7 @@
     "@tanstack/react-query-devtools": "^5.101.4",
     "axios": "^1.19.0",
     "dompurify": "^3.4.14",
+    "flagsmith": "^10.0.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "react": "^19.2.8",
@@ -35,6 +37,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@lhci/cli": "^0.15.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.5",
