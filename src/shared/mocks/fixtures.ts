@@ -17,6 +17,14 @@ import type {
   PipelineStage,
 } from '@/features/crm';
 
+import type {
+  Comment as PmsComment,
+  JsonPlaceholderPost,
+  JsonPlaceholderTodo,
+  ProjectOverride,
+  TaskOverride,
+} from '@/features/pms';
+
 /* ---------- DummyJSON : utilisateurs ---------- */
 
 export const mockUsers: DummyJsonUser[] = [
@@ -344,6 +352,20 @@ export const mockStockMovements: StockMovement[] = [
     occurredAt: '2026-07-12T10:00:00.000Z',
   },
 ];
+
+export const mockJsonPlaceholderPosts: JsonPlaceholderPost[] = Array.from({ length: 5 }, (_, i) => ({
+  id: i + 1,
+  userId: 1,
+  title: `Projet externe ${i + 1}`,
+  body: `Description du projet ${i + 1}`,
+}));
+
+export const mockJsonPlaceholderTodos: JsonPlaceholderTodo[] = Array.from({ length: 5 }, (_, i) => ({
+  id: i + 1,
+  userId: 1,
+  title: `Tâche externe ${i + 1}`,
+  completed: i % 2 === 0,
+}));
 
 // Copies de référence, pour restaurer l'état initial entre deux tests
 // qui modifient les données. La copie des évaluations est profonde :

@@ -8,12 +8,21 @@ import {
   mockCategories,
   mockClientProfiles,
   mockComments,
+  mockJsonPlaceholderPosts,
+  mockJsonPlaceholderTodos,
+  mockLeaveRequests,
   mockOpportunities,
   mockOrderMeta,
   mockPipelineStages,
+  mockPmsComments,
+  mockPresenceEntries,
   mockProducts,
+  mockProjectOverrides,
+  mockRandomUserResults,
+  mockReqresUsers,
   mockStockMovements,
   mockSuppliers,
+  mockTaskOverrides,
   mockUsers,
 } from './fixtures';
 
@@ -21,6 +30,8 @@ const DUMMY = 'https://dummyjson.com';
 const PLACEHOLDER = 'https://jsonplaceholder.typicode.com';
 const LOCAL = 'http://localhost:3001';
 const WEATHER = 'https://api.openweathermap.org/data/2.5';
+const REQRES = 'https://reqres.in/api';
+const RANDOM_USER = 'https://randomuser.me/api';
 
 // Reproduit la pagination de DummyJSON : limit=0 renvoie tout.
 function paginate<T>(items: T[], url: URL, key: string) {
@@ -104,6 +115,9 @@ const dummyJsonHandlers = [
 /* ---------- JSONPlaceholder ---------- */
 
 const placeholderHandlers = [
+  http.get(`${PLACEHOLDER}/posts`, () => HttpResponse.json(mockJsonPlaceholderPosts)),
+  http.get(`${PLACEHOLDER}/todos`, () => HttpResponse.json(mockJsonPlaceholderTodos)),
+
   http.get(`${PLACEHOLDER}/comments`, ({ request }) => {
     const postId = new URL(request.url).searchParams.get('postId');
 
@@ -152,8 +166,6 @@ const jsonServerHandlers = [
     return HttpResponse.json({ ...body, id: 999 }, { status: 201 });
   }),
 
-  // Le handler conserve la modification : sans cela, l'invalidation qui suit
-  // la mutation rechargerait les données d'origine et écraserait le résultat.
   http.patch(`${LOCAL}/opportunities/:id`, async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     const index = mockOpportunities.findIndex((o) => o.id === Number(params.id));
@@ -213,8 +225,6 @@ const jsonServerHandlers = [
 
   http.get(`${LOCAL}/suppliers`, () => HttpResponse.json(mockSuppliers)),
 
-  // Comme pour les opportunités, le handler conserve la modification :
-  // l'invalidation qui suit la mutation rechargerait sinon l'état d'origine.
   http.patch(`${LOCAL}/suppliers/:id`, async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     const index = mockSuppliers.findIndex((s) => s.id === Number(params.id));
@@ -284,9 +294,201 @@ const weatherHandlers = [
   ),
 ];
 
+/* ---------- Reqres : comptes (6 par page, comme la vraie API) ---------- */
+
+const REQRES_PER_PAGE = 6;
+
+const reqresHandlers = [
+  http.get(`${REQRES}/users`, ({ request }) => {
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') ?? 1);
+    const start = (page - 1) * REQRES_PER_PAGE;
+
+    return HttpResponse.json({
+      page,
+      per_page: REQRES_PER_PAGE,
+      total: mockReqresUsers.length,
+      total_pages: Math.ceil(mockReqresUsers.length / REQRES_PER_PAGE),
+      data: mockReqresUsers.slice(start, start + REQRES_PER_PAGE),
+    });
+  }),
+
+  http.get(`${REQRES}/users/:id`, ({ params }) => {
+    const user = mockReqresUsers.find((u) => u.id === Number(params.id));
+    return user ? HttpResponse.json({ data: user }) : new HttpResponse(null, { status: 404 });
+  }),
+
+  http.post(`${REQRES}/login`, async ({ request }) => {
+    const body = (await request.json()) as { email: string; password: string };
+    if (body.email === 'eve.holt@reqres.in' && body.password === 'pistol') {
+      return HttpResponse.json({ token: 'QpwL5tke4Pnpja7X4' });
+    }
+    return new HttpResponse(JSON.stringify({ error: 'user not found' }), { status: 400 });
+  }),
+
+  http.post(`${REQRES}/register`, async ({ request }) => {
+    const body = (await request.json()) as { email: string; password: string };
+    if (body.email === 'eve.holt@reqres.in') {
+      return HttpResponse.json({ id: 4, token: 'QpwL5tke4Pnpja7X4' });
+    }
+    return new HttpResponse(
+      JSON.stringify({ error: 'Note: Only defined users succeed registration' }),
+      { status: 400 },
+    );
+  }),
+
+  http.put(`${REQRES}/users/:id`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ ...body, updatedAt: new Date().toISOString() });
+  }),
+
+  http.delete(`${REQRES}/users/:id`, () => new HttpResponse(null, { status: 204 })),
+];
+
+/* ---------- RandomUser : profils d'enrichissement RH ---------- */
+
+const randomUserHandlers = [
+  http.get(`${RANDOM_USER}/`, ({ request }) => {
+    const url = new URL(request.url);
+    const results = Number(url.searchParams.get('results') ?? 1);
+    return HttpResponse.json({ results: mockRandomUserResults.slice(0, results) });
+  }),
+];
+
+/* ---------- RH et PMS : collections locales (JSON Server) ---------- */
+
+const myJsonServerHandlers = [
+  http.get(`${LOCAL}/leaveRequests`, ({ request }) => {
+    const url = new URL(request.url);
+    let items = mockLeaveRequests as unknown as Array<Record<string, unknown>>;
+    items = filterByQuery(items, url, 'employeeId');
+    items = filterByQuery(items, url, 'status');
+    return HttpResponse.json(items);
+  }),
+
+  http.post(`${LOCAL}/leaveRequests`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const created = { ...body, id: mockLeaveRequests.length + 1000 };
+    mockLeaveRequests.push(created as never);
+    return HttpResponse.json(created, { status: 201 });
+  }),
+
+  http.patch(`${LOCAL}/leaveRequests/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const index = mockLeaveRequests.findIndex((r) => r.id === Number(params.id));
+    if (index === -1) return new HttpResponse(null, { status: 404 });
+
+    mockLeaveRequests[index] = { ...mockLeaveRequests[index], ...body };
+    return HttpResponse.json(mockLeaveRequests[index]);
+  }),
+
+  http.get(`${LOCAL}/presence`, ({ request }) => {
+    const url = new URL(request.url);
+    let items = mockPresenceEntries as unknown as Array<Record<string, unknown>>;
+    items = filterByQuery(items, url, 'employeeId');
+    items = filterByQuery(items, url, 'date');
+    return HttpResponse.json(items);
+  }),
+
+  http.post(`${LOCAL}/presence`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const created = { ...body, id: mockPresenceEntries.length + 1000 };
+    mockPresenceEntries.push(created as never);
+    return HttpResponse.json(created, { status: 201 });
+  }),
+
+  http.patch(`${LOCAL}/presence/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const index = mockPresenceEntries.findIndex((p) => p.id === Number(params.id));
+    if (index === -1) return new HttpResponse(null, { status: 404 });
+
+    mockPresenceEntries[index] = { ...mockPresenceEntries[index], ...body };
+    return HttpResponse.json(mockPresenceEntries[index]);
+  }),
+
+  http.get(`${LOCAL}/projects`, () => HttpResponse.json(mockProjectOverrides)),
+
+  http.post(`${LOCAL}/projects`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    mockProjectOverrides.push(body as never);
+    return HttpResponse.json(body, { status: 201 });
+  }),
+
+  http.patch(`${LOCAL}/projects/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const index = mockProjectOverrides.findIndex((p) => p.id === Number(params.id));
+    if (index === -1) return new HttpResponse(null, { status: 404 });
+
+    mockProjectOverrides[index] = { ...mockProjectOverrides[index], ...body };
+    return HttpResponse.json(mockProjectOverrides[index]);
+  }),
+
+  http.delete(`${LOCAL}/projects/:id`, ({ params }) => {
+    const index = mockProjectOverrides.findIndex((p) => p.id === Number(params.id));
+    if (index !== -1) mockProjectOverrides.splice(index, 1);
+    return new HttpResponse(null, { status: 200 });
+  }),
+
+  http.get(`${LOCAL}/tasks`, () => HttpResponse.json(mockTaskOverrides)),
+
+  http.post(`${LOCAL}/tasks`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    mockTaskOverrides.push(body as never);
+    return HttpResponse.json(body, { status: 201 });
+  }),
+
+  http.patch(`${LOCAL}/tasks/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const index = mockTaskOverrides.findIndex((t) => t.id === Number(params.id));
+    if (index === -1) return new HttpResponse(null, { status: 404 });
+
+    mockTaskOverrides[index] = { ...mockTaskOverrides[index], ...body };
+    return HttpResponse.json(mockTaskOverrides[index]);
+  }),
+
+  http.delete(`${LOCAL}/tasks/:id`, ({ params }) => {
+    const index = mockTaskOverrides.findIndex((t) => t.id === Number(params.id));
+    if (index !== -1) mockTaskOverrides.splice(index, 1);
+    return new HttpResponse(null, { status: 200 });
+  }),
+
+  http.get(`${LOCAL}/comments`, ({ request }) => {
+    const url = new URL(request.url);
+    let items = mockPmsComments as unknown as Array<Record<string, unknown>>;
+    items = filterByQuery(items, url, 'projectId');
+    items = filterByQuery(items, url, 'taskId');
+    return HttpResponse.json(items);
+  }),
+
+  http.post(`${LOCAL}/comments`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const created = { ...body, id: mockPmsComments.length + 1000 };
+    mockPmsComments.push(created as never);
+    return HttpResponse.json(created, { status: 201 });
+  }),
+
+  http.patch(`${LOCAL}/comments/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const index = mockPmsComments.findIndex((c) => c.id === Number(params.id));
+    if (index === -1) return new HttpResponse(null, { status: 404 });
+
+    mockPmsComments[index] = { ...mockPmsComments[index], ...body };
+    return HttpResponse.json(mockPmsComments[index]);
+  }),
+
+  http.delete(`${LOCAL}/comments/:id`, ({ params }) => {
+    const index = mockPmsComments.findIndex((c) => c.id === Number(params.id));
+    if (index !== -1) mockPmsComments.splice(index, 1);
+    return new HttpResponse(null, { status: 200 });
+  }),
+];
+
 export const handlers = [
   ...dummyJsonHandlers,
   ...placeholderHandlers,
   ...jsonServerHandlers,
   ...weatherHandlers,
+  ...reqresHandlers,
+  ...randomUserHandlers,
+  ...myJsonServerHandlers,
 ];
