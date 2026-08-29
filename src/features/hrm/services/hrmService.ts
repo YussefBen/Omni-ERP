@@ -128,12 +128,12 @@ export async function updateLeaveStatus({
 
 /* ---------- Présence ---------- */
 
-export async function fetchPresenceToday(employeeId: number): Promise<PresenceEntry | undefined> {
+export async function fetchPresenceToday(employeeId: number): Promise<PresenceEntry | null> {
   const today = new Date().toISOString().slice(0, 10);
   const { data } = await localApi.get<PresenceEntry[]>('/presence', {
     params: { employeeId, date: today },
   });
-  return data[0];
+  return data[0] ?? null;
 }
 
 export async function checkIn(employeeId: number): Promise<PresenceEntry> {
