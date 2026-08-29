@@ -1,5 +1,6 @@
 // Init Sentry, plus les fonctions pour associer/retirer l'utilisateur courant
 import * as Sentry from '@sentry/react';
+import { sendSlackAlert } from './slackAlertService';
 
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined;
 
@@ -16,7 +17,6 @@ export function initSentry(): void {
   });
 }
 
-// Pas d'email ou le mot de passe, juste de quoi identifier la session qui a planté
 export function setSentryUser(userId: number, role: string): void {
   Sentry.setUser({ id: String(userId), role });
 }
@@ -25,6 +25,16 @@ export function clearSentryUser(): void {
   Sentry.setUser(null);
 }
 
-export function captureException(error: unknown, context?: Record<string, unknown>): void {
+// isCritical : en plus de Sentry envoie une alerte Slack
+export function captureException(
+  error: unknown,
+  context?: Record<string, unknown>,
+  isCritical = false,
+): void {
   Sentry.captureException(error, { extra: context });
+
+  if (isCritical) {
+    const message = error instanceof Error ? error.message : String(error);
+    void sendSlackAlert(`Erreur critique : ${message}`);
+  }
 }
