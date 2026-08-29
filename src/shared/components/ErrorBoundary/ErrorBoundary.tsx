@@ -22,7 +22,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
     console.error("[ErrorBoundary] Erreur de rendu capturée :", error, info.componentStack);
-    captureException(error, { componentStack: info.componentStack });
+    captureException(error, { componentStack: info.componentStack }, true);
   }
 
   // Permet de retenter le rendu des enfants sans recharger toute la page

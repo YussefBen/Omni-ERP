@@ -8,5 +8,6 @@ export { usePageViewTracking } from './hooks/usePageViewTracking';
 export { initFeatureFlags } from './services/featureFlagService';
 export { useFeatureFlag } from './hooks/useFeatureFlag';
 export { useCanaryFeature } from './hooks/useCanaryFeature';
+export { sendSlackAlert } from './services/slackAlertService';
 
 export type * from './types';
