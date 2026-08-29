@@ -9,5 +9,6 @@ export { initFeatureFlags } from './services/featureFlagService';
 export { useFeatureFlag } from './hooks/useFeatureFlag';
 export { useCanaryFeature } from './hooks/useCanaryFeature';
 export { sendSlackAlert } from './services/slackAlertService';
+export { initTracing } from './services/tracingService';
 
 export type * from './types';
