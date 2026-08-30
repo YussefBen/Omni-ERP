@@ -16,7 +16,8 @@ import type {
   Opportunity,
   PipelineStage,
 } from '@/features/crm';
-
+import type { RandomUserResult, ReqresUser } from '@/features/hrm';
+import type { LeaveRequest, PresenceEntry } from '@/features/hrm';
 import type {
   Comment as PmsComment,
   JsonPlaceholderPost,
@@ -353,6 +354,81 @@ export const mockStockMovements: StockMovement[] = [
   },
 ];
 
+// Copies de référence, pour restaurer l'état initial entre deux tests
+// qui modifient les données. La copie des évaluations est profonde :
+// un tableau partagé garderait les avis ajoutés par le test précédent.
+const opportunitiesSnapshot = mockOpportunities.map((o) => ({ ...o }));
+const suppliersSnapshot = mockSuppliers.map((s) => ({
+  ...s,
+  evaluations: s.evaluations.map((e) => ({ ...e })),
+}));
+
+/* ---------- Reqres : comptes (12 au total, 6 par page comme la vraie API) ---------- */
+
+export const mockReqresUsers: ReqresUser[] = Array.from({ length: 12 }, (_, i) => ({
+  id: i + 1,
+  email: `utilisateur${i + 1}@exemple.fr`,
+  first_name: `Prenom${i + 1}`,
+  last_name: `Nom${i + 1}`,
+  avatar: `https://exemple.fr/avatars/${i + 1}.jpg`,
+}));
+
+/* ---------- RandomUser : profils d'enrichissement RH ---------- */
+
+export const mockRandomUserResults: RandomUserResult[] = Array.from({ length: 12 }, (_, i) => ({
+  name: { first: `Prenom${i + 1}`, last: `Nom${i + 1}` },
+  phone: `01 00 00 00 ${String(i + 1).padStart(2, '0')}`,
+  location: { city: 'Lyon', country: 'France' },
+  picture: { large: '', medium: '', thumbnail: '' },
+}));
+
+/* ---------- RH : congés et présence (JSON Server) ---------- */
+
+export const mockLeaveRequests: LeaveRequest[] = [
+  {
+    id: 1,
+    employeeId: 1,
+    type: 'conges_payes',
+    startDate: '2026-08-10',
+    endDate: '2026-08-14',
+    status: 'approved',
+  },
+  {
+    id: 2,
+    employeeId: 2,
+    type: 'maladie',
+    startDate: '2026-09-01',
+    endDate: '2026-09-02',
+    status: 'pending',
+  },
+];
+
+export const mockPresenceEntries: PresenceEntry[] = [
+  {
+    id: 1,
+    employeeId: 1,
+    date: '2026-09-01',
+    checkIn: '2026-09-01T08:00:00.000Z',
+    checkOut: null,
+  },
+];
+
+/* ---------- PMS : surcharges projets/tâches et commentaires (JSON Server) ---------- */
+
+export const mockProjectOverrides: ProjectOverride[] = [];
+export const mockTaskOverrides: TaskOverride[] = [];
+export const mockPmsComments: PmsComment[] = [
+  {
+    id: 1,
+    projectId: 1,
+    authorId: 1,
+    content: 'Premier commentaire de test',
+    createdAt: '2026-08-01T10:00:00.000Z',
+  },
+];
+
+/* ---------- JSONPlaceholder : posts/todos, base des projets/tâches PMS ---------- */
+
 export const mockJsonPlaceholderPosts: JsonPlaceholderPost[] = Array.from({ length: 5 }, (_, i) => ({
   id: i + 1,
   userId: 1,
@@ -367,14 +443,9 @@ export const mockJsonPlaceholderTodos: JsonPlaceholderTodo[] = Array.from({ leng
   completed: i % 2 === 0,
 }));
 
-// Copies de référence, pour restaurer l'état initial entre deux tests
-// qui modifient les données. La copie des évaluations est profonde :
-// un tableau partagé garderait les avis ajoutés par le test précédent.
-const opportunitiesSnapshot = mockOpportunities.map((o) => ({ ...o }));
-const suppliersSnapshot = mockSuppliers.map((s) => ({
-  ...s,
-  evaluations: s.evaluations.map((e) => ({ ...e })),
-}));
+const leaveRequestsSnapshot = mockLeaveRequests.map((r) => ({ ...r }));
+const presenceSnapshot = mockPresenceEntries.map((p) => ({ ...p }));
+const pmsCommentsSnapshot = mockPmsComments.map((c) => ({ ...c }));
 
 export function resetFixtures(): void {
   mockOpportunities.length = 0;
@@ -387,4 +458,16 @@ export function resetFixtures(): void {
       evaluations: s.evaluations.map((e) => ({ ...e })),
     })),
   );
+
+  mockLeaveRequests.length = 0;
+  mockLeaveRequests.push(...leaveRequestsSnapshot.map((r) => ({ ...r })));
+
+  mockPresenceEntries.length = 0;
+  mockPresenceEntries.push(...presenceSnapshot.map((p) => ({ ...p })));
+
+  mockProjectOverrides.length = 0;
+  mockTaskOverrides.length = 0;
+
+  mockPmsComments.length = 0;
+  mockPmsComments.push(...pmsCommentsSnapshot.map((c) => ({ ...c })));
 }
