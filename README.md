@@ -19,6 +19,7 @@ Projet réalisé en équipe de trois dans le cadre de la formation.
 - [Tests](#tests)
 - [Choix techniques](#choix-techniques)
 - [Sécurité](#sécurité)
+- [Supervision](#supervision)
 - [Conventions d'équipe](#conventions-déquipe)
 - [Répartition du travail](#répartition-du-travail)
 
@@ -48,8 +49,17 @@ Ouvrez-le et renseignez les valeurs manquantes.
 |---|---|---|
 | `VITE_OPENWEATHER_API_KEY` | Widget météo du tableau de bord | Compte gratuit sur openweathermap.org, onglet API keys |
 | `VITE_JSON_SERVER_URL` | API locale | Laisser `http://localhost:3001` |
-| `VITE_SENTRY_DSN` | Remontée des erreurs | Facultatif en développement |
-| `VITE_GA4_MEASUREMENT_ID` | Mesure d'audience | Facultatif en développement |
+| `VITE_SENTRY_DSN` | Remontée des erreurs (Sentry) | Fournie par l'équipe, un seul projet partagé |
+| `VITE_GA4_MEASUREMENT_ID` | Mesure d'audience (Google Analytics 4) | Fournie par l'équipe, une seule propriété partagée |
+| `VITE_FLAGSMITH_ENVIRONMENT_KEY` | Feature flags et canary release | Fournie par l'équipe, un seul environnement partagé |
+| `VITE_SLACK_WEBHOOK_URL` | Alertes Slack (service down, erreur critique) | Fournie par l'équipe |
+| `VITE_HONEYCOMB_API_KEY` | Traçage OpenTelemetry des appels API | Fournie par l'équipe |
+
+Sentry, GA4, Flagsmith, Slack et Honeycomb sont **facultatifs en développement** : sans
+ces variables, chaque outil se désactive silencieusement (avertissement en console),
+l'application continue de fonctionner normalement. Contrairement à OpenWeatherMap, ce
+sont des clés **de projet**, partagées par toute l'équipe plutôt qu'une par personne —
+demandez-les à Jessica plutôt que de créer vos propres comptes.
 
 La clé OpenWeatherMap met jusqu'à deux heures à s'activer après création. En son absence,
 le widget météo affiche un message explicite plutôt qu'une erreur.
@@ -197,7 +207,7 @@ npx tsc -b && npm run build && npx vitest run
 
 ## Tests
 
-480 tests répartis sur 28 fichiers.
+583 tests répartis sur 46 fichiers.
 
 Les appels réseau sont interceptés par MSW : les tests ne dépendent ni d'une connexion,
 ni de la disponibilité des API, et peuvent affirmer des valeurs exactes.
@@ -218,7 +228,11 @@ Le rapport détaillé est produit dans `coverage/index.html`.
 | Ressources d'entreprise | 93 à 97 % |
 | Tableau de bord | 91 à 100 % |
 | Utilitaires partagés | 98 % |
-| Authentification, projets, ressources humaines | à compléter |
+| Ressources humaines | Fonctions dérivées et hooks couverts |
+| Gestion de projets | Fonctions dérivées, hooks et mutations optimistes couverts |
+| Paramètres | Couvert |
+| Supervision (monitoring) | Health checks couverts (cas ok, down, dégradé) |
+| Authentification | Rôle dérivé, connexion, inscription et session couverts |
 | Composants d'interface | à compléter |
 
 ### Ce qui est testé
@@ -275,6 +289,16 @@ La prévision de chiffre d'affaires expose son coefficient de détermination, ce
 à l'écran de signaler une tendance peu marquée au lieu de présenter un chiffre incertain
 comme une certitude.
 
+**Suppression restreinte sur les projets et tâches d'origine JSONPlaceholder.** Les 100
+premiers projets et les 200 premières tâches viennent de JSONPlaceholder, une API en
+lecture seule qui simule des écritures sans jamais les enregistrer réellement. Un
+`DELETE` qui « réussirait » dessus serait un mensonge : l'élément réapparaîtrait au
+prochain rafraîchissement. La création et la modification fonctionnent sans restriction
+sur tous les projets et toutes les tâches (la modification est stockée localement en
+surcharge) ; seule la suppression est bloquée pour les éléments d'origine externe, avec
+un message d'erreur explicite plutôt qu'un échec silencieux. Suppression illimitée pour
+tout projet ou toute tâche créés dans l'application.
+
 ---
 
 ## Sécurité
@@ -297,6 +321,40 @@ En résumé :
 Les trois dernières supposent un serveur applicatif qui décide. Le projet n'en ayant pas,
 elles sont implémentées de bout en bout mais leur garantie reste théorique. Cette
 distinction est explicite plutôt que présentée comme un dispositif homogène.
+
+---
+
+## Supervision
+
+Bonus monitoring, sept mesures mises en place.
+
+| Mesure | Portée |
+|---|---|
+| Suivi des erreurs (Sentry) | Erreurs de rendu et mutations en échec, avec l'utilisateur associé |
+| Web Vitals | Cinq métriques Core Web Vitals mesurées en continu |
+| Analyse d'audience (GA4) | Pages vues automatiques, événements métier à la charge de chaque domaine |
+| Feature flags et canary release | Activation par flag, tirage local à 10 % indépendant de la connexion |
+| Intégration continue (Lighthouse CI) | Score mesuré à chaque envoi sur `dev`, un seul passage |
+| Alertes Slack | Service indisponible détecté, ou erreur critique de rendu |
+| Traçage distribué (OpenTelemetry) | Chaque appel réseau instrumenté automatiquement, envoyé à Honeycomb |
+
+### Ce qui est réel, ce qui est démonstratif
+
+Le suivi des erreurs, les Web Vitals, l'audience et le traçage sont des mesures directes,
+sans limite de principe : ce qu'ils rapportent reflète l'état réel de l'application.
+
+Le canary release est **simulé côté client** plutôt que par segment Flagsmith : chaque
+navigateur tire un nombre une seule fois, le conserve, et l'utilise pour décider s'il
+fait partie des 10 %. Suffisant pour démontrer le principe, mais un vrai découpage par
+segment (compte utilisateur, région) demanderait la configuration Flagsmith payante.
+
+L'alerte Slack utilise le mode `no-cors` du navigateur : le message part bien, mais le
+code ne peut pas vérifier que Slack l'a reçu (la réponse n'est pas lisible). Une panne
+prolongée ne déclenche qu'une seule alerte, pas une par minute, pour éviter le bruit.
+
+Le score Lighthouse varie d'un envoi à l'autre selon la charge du serveur qui exécute le
+test : un seul passage est mesuré par envoi plutôt qu'une moyenne, pour garder le pipeline
+rapide.
 
 ---
 
