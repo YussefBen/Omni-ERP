@@ -1,0 +1,310 @@
+{
+  "info": {
+    "_postman_id": "07ca5ca8-e602-4ffd-9e7f-6b83a0b0a704",
+    "name": "OMNI-ERP",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "48783125",
+    "_collection_link": "https://go.postman.co/collection/48783125-07ca5ca8-e602-4ffd-9e7f-6b83a0b0a704?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Reqres",
+      "item": [
+        {
+          "name": "Connexion",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "   {\r\n     \"email\": \"eve.holt@reqres.in\",\r\n     \"password\": \"pistol\"\r\n   }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{reqresUrl}}/login",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "description": "Utilisation de eve.holtreqres.in / pistol peut fonctionner sur l'API reqRes.\n\nRéponse : { token }"
+          },
+          "response": []
+        },
+        {
+          "name": "Inscription",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"eve.holt@reqres.in\",\r\n  \"password\": \"pistol\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{reqresUrl}}/register",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "register"
+              ]
+            },
+            "description": "Utilisé pour l'auto-login juste après inscription.  \nRéponse : { id, token }.EndFragment"
+          },
+          "response": []
+        },
+        {
+          "name": "Lister les comptes(page 1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{reqresUrl}}/users?page=1",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Sert à retrouver le profil complet après un login, et de roster pour le domaine RH."
+          },
+          "response": []
+        },
+        {
+          "name": "Lister les comptes(page 2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{reqresUrl}}/users?page=1",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Sert à retrouver le profil complet après un login, et de roster pour le domaine RH."
+          },
+          "response": []
+        },
+        {
+          "name": "Récupérer un compte",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{reqresUrl}}/users/2",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "users",
+                "2"
+              ]
+            },
+            "description": "Réponse : { data: { id, email, first_name, last_name, avatar } }"
+          },
+          "response": []
+        },
+        {
+          "name": "Modifier un compte",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"morpheus\",\r\n  \"job\": \"zion resident\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{reqresUrl}}/users/2",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "users",
+                "2"
+              ]
+            },
+            "description": "Réservé à un futur écran d'administration des comptes.\n\nRéponse : { name, job, updatedAt }."
+          },
+          "response": []
+        },
+        {
+          "name": "Supprimer un compte",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{reqresUrl}}/users/2",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "users",
+                "2"
+              ]
+            },
+            "description": "Réservé à un futur écran d'administration.\n\nRéponse : 204 sans contenu."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "RandomUser",
+      "item": [
+        {
+          "name": "Profils d'enrichissement",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{randomUserUrl}}/?results=12&seed=omnierp-hrm&nat=fr",
+              "host": [
+                "{{randomUserUrl}}"
+              ],
+              "path": [
+                ""
+              ],
+              "query": [
+                {
+                  "key": "results",
+                  "value": "12"
+                },
+                {
+                  "key": "seed",
+                  "value": "omnierp-hrm"
+                },
+                {
+                  "key": "nat",
+                  "value": "fr"
+                }
+              ]
+            },
+            "description": "Garantit les mêmes profils à chaque appel car seed fixe.  \nFusionné avec liste des comptes Reqres pour former un Employee."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "DummyJSON",
+      "item": []
+    },
+    {
+      "name": "OpenWeatherMap",
+      "item": []
+    },
+    {
+      "name": "JsonPlaceHolder",
+      "item": [
+        {
+          "name": "PMS",
+          "item": []
+        },
+        {
+          "name": "CRM",
+          "item": []
+        }
+      ]
+    },
+    {
+      "name": "JSON Server",
+      "item": [
+        {
+          "name": "RH",
+          "item": []
+        },
+        {
+          "name": "PMS",
+          "item": []
+        },
+        {
+          "name": "CRM / ERP",
+          "item": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "reqresUrl",
+      "value": ""
+    },
+    {
+      "key": "randomUserUrl",
+      "value": ""
+    },
+    {
+      "key": "dummyJsonUrl",
+      "value": ""
+    },
+    {
+      "key": "openWeatherUrl",
+      "value": ""
+    },
+    {
+      "key": "placeholderUrl",
+      "value": ""
+    },
+    {
+      "key": "localUrl",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}
