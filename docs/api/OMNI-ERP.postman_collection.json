@@ -1,0 +1,777 @@
+{
+  "info": {
+    "_postman_id": "07ca5ca8-e602-4ffd-9e7f-6b83a0b0a704",
+    "name": "OMNI-ERP",
+    "description": "**Contournements documentés**\n\nCertaines données nécessaires au métier ne sont fournies par aucune API. Elles sont dérivées de façon déterministe (un même id produit toujours la même valeur) pour rester stables d'un rafraîchissement à l'autre.\n\n| Donnée manquante | Domaine | Solution retenue |\n| --- | --- | --- |\n| Rôle utilisateur, absent de Reqres | Auth (Jessica) | Dérivé de l'id du compte (cycle admin/manager/user) |\n| Département/équipe/compétences, absents de Reqres et RandomUser | RH (Jessica) | Dérivés de l'id du compte |\n| Statut/échéance des projets et tâches, absents de JSONPlaceholder | PMS (Jessica) | Dérivés de l'id, ou stockés en surcharge locale une fois modifiés |\n| Note de satisfaction, absente des commentaires JSONPlaceholder | CRM (Youssef) | Dérivée de l'id du commentaire par hachage déterministe (NPS obtenu : 25 sur les 500 avis) |\n| Statut et date des commandes, absents des paniers DummyJSON | ERP (Youssef) | Stockés localement (JSON Server) et joints aux lignes distantes |",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "48783125",
+    "_collection_link": "https://go.postman.co/collection/48783125-07ca5ca8-e602-4ffd-9e7f-6b83a0b0a704?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Reqres",
+      "item": [
+        {
+          "name": "Connexion",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "   {\r\n     \"email\": \"eve.holt@reqres.in\",\r\n     \"password\": \"pistol\"\r\n   }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{reqresUrl}}/login",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "description": "Utilisation de eve.holtreqres.in / pistol peut fonctionner sur l'API reqRes.\n\nRéponse : { token }"
+          },
+          "response": []
+        },
+        {
+          "name": "Inscription",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"eve.holt@reqres.in\",\r\n  \"password\": \"pistol\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{reqresUrl}}/register",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "register"
+              ]
+            },
+            "description": "Utilisé pour l'auto-login juste après inscription.  \nRéponse : { id, token }.EndFragment"
+          },
+          "response": []
+        },
+        {
+          "name": "Lister les comptes(page 1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{reqresUrl}}/users?page=1",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Sert à retrouver le profil complet après un login, et de roster pour le domaine RH."
+          },
+          "response": []
+        },
+        {
+          "name": "Lister les comptes(page 2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{reqresUrl}}/users?page=2",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "2"
+                }
+              ]
+            },
+            "description": "Sert à retrouver le profil complet après un login, et de roster pour le domaine RH."
+          },
+          "response": []
+        },
+        {
+          "name": "Récupérer un compte",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{reqresUrl}}/users/2",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "users",
+                "2"
+              ]
+            },
+            "description": "Réponse : { data: { id, email, first_name, last_name, avatar } }"
+          },
+          "response": []
+        },
+        {
+          "name": "Modifier un compte",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"morpheus\",\r\n  \"job\": \"zion resident\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{reqresUrl}}/users/2",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "users",
+                "2"
+              ]
+            },
+            "description": "Réservé à un futur écran d'administration des comptes.\n\nRéponse : { name, job, updatedAt }."
+          },
+          "response": []
+        },
+        {
+          "name": "Supprimer un compte",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{reqresUrl}}/users/2",
+              "host": [
+                "{{reqresUrl}}"
+              ],
+              "path": [
+                "users",
+                "2"
+              ]
+            },
+            "description": "Réservé à un futur écran d'administration.\n\nRéponse : 204 sans contenu."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "RandomUser",
+      "item": [
+        {
+          "name": "Profils d'enrichissement",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{randomUserUrl}}/?results=12&seed=omnierp-hrm&nat=fr",
+              "host": [
+                "{{randomUserUrl}}"
+              ],
+              "path": [
+                ""
+              ],
+              "query": [
+                {
+                  "key": "results",
+                  "value": "12"
+                },
+                {
+                  "key": "seed",
+                  "value": "omnierp-hrm"
+                },
+                {
+                  "key": "nat",
+                  "value": "fr"
+                }
+              ]
+            },
+            "description": "Garantit les mêmes profils à chaque appel car seed fixe.  \nFusionné avec liste des comptes Reqres pour former un Employee."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "DummyJSON",
+      "item": []
+    },
+    {
+      "name": "OpenWeatherMap",
+      "item": []
+    },
+    {
+      "name": "JSONPlaceHolder",
+      "item": [
+        {
+          "name": "PMS",
+          "item": [
+            {
+              "name": "Lister les projets  (base externe)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{placeholderUrl}}/posts",
+                  "host": [
+                    "{{placeholderUrl}}"
+                  ],
+                  "path": [
+                    "posts"
+                  ]
+                },
+                "description": "Source en lecture seule.  \nStatut, échéance et progression ne sont pas existants car dérivés côtés applications."
+              },
+              "response": []
+            },
+            {
+              "name": "Lister les tâches (base externe)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{placeholderUrl}}/todos",
+                  "host": [
+                    "{{placeholderUrl}}"
+                  ],
+                  "path": [
+                    "todos"
+                  ]
+                },
+                "description": "Source en lecture seule.  \nLien vers projet inexistant nativement. il est dérivé de l'id de la tâche/"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "CRM",
+          "item": []
+        }
+      ]
+    },
+    {
+      "name": "JSON Server",
+      "item": [
+        {
+          "name": "RH",
+          "item": [
+            {
+              "name": "Lister les congés",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/leaveRequests",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "leaveRequests"
+                  ]
+                },
+                "description": "Filtres possibles en query string"
+              },
+              "response": []
+            },
+            {
+              "name": "Créer une demande de congé",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"employeeId\": 5,\r\n    \"type\": \"conges_payes\",\r\n    \"startDate\": \"2026-10-01\",\r\n    \"endDate\": \"2026-10-05\",\r\n    \"reason\": \"Vacances\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/leaveRequests",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "leaveRequests"
+                  ]
+                },
+                "description": "Précision: le statut est toujours 'pending' à la création"
+              },
+              "response": []
+            },
+            {
+              "name": "Valider ou refuser un congé",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\": \"approved\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/leaveRequests/NCg5ALff9Q0",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "leaveRequests",
+                    "NCg5ALff9Q0"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Présence du jour",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/presence?employeeId=1&date=2026-09-01",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "presence"
+                  ],
+                  "query": [
+                    {
+                      "key": "employeeId",
+                      "value": "1"
+                    },
+                    {
+                      "key": "date",
+                      "value": "2026-09-01"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Check-in",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"employeeId\": 1,\r\n    \"date\": \"2026-09-01\",\r\n    \"checkIn\": \"2026-09-01T08:00:00.000Z\",\r\n    \"checkOut\": null\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/presence",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "presence"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Check-out",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"checkOut\": \"2026-09-01T17:30:00.000Z\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/presence/peWbzhJm0Z4",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "presence",
+                    "peWbzhJm0Z4"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "PMS",
+          "item": [
+            {
+              "name": "Créer un projet",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"id\": 101,\r\n    \"title\": \"Nouveau projet\",\r\n    \"description\": \"Créé dans l'application\",\r\n    \"ownerId\": 1,\r\n    \"status\": \"a_faire\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/projects",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "projects"
+                  ]
+                },
+                "description": "L'id est calculé avant l'appel pour ne jamais entrer en collision avec un id de JSONPlaceHolder"
+              },
+              "response": []
+            },
+            {
+              "name": "Modifier un projet",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\": \"termine\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/projects/JFL_00zj370",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "projects",
+                    "JFL_00zj370"
+                  ]
+                },
+                "description": "Modification stockée en surcharge locale.  \nAucune surcharge existant pour l'ID = l'appli fait un post et pas un patch"
+              },
+              "response": []
+            },
+            {
+              "name": "Supprimer un projet",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/projects/JFL_00zj370",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "projects",
+                    "JFL_00zj370"
+                  ]
+                },
+                "description": "Refusé côté application pour une id en dessous de 100.  \nFonctionne que sur les projets créés dans l'appli."
+              },
+              "response": []
+            },
+            {
+              "name": "Lister les surcharges de tâches",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/tasks",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "tasks"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Créer une tâche",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"id\": 201,\r\n    \"projectId\": 1,\r\n    \"title\": \"Nouvelle tâche\",\r\n    \"status\": \"a_faire\",\r\n    \"estimatedHours\": 4\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/tasks",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "tasks"
+                  ]
+                },
+                "description": "Même logique ID que les projets"
+              },
+              "response": []
+            },
+            {
+              "name": "Modifier une tâche",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\": \"en_cours\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/tasks/1_X_KSmbNqg",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    "1_X_KSmbNqg"
+                  ]
+                },
+                "description": "Déplacer une carte sur un kanban"
+              },
+              "response": []
+            },
+            {
+              "name": "Supprimer une tâche",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/tasks/1_X_KSmbNqg",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    "1_X_KSmbNqg"
+                  ]
+                },
+                "description": "Refusé si ID inférieur ou égal à 200"
+              },
+              "response": []
+            },
+            {
+              "name": "Lister les commentaires d'un projet",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/comments?projectId=1",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "comments"
+                  ],
+                  "query": [
+                    {
+                      "key": "projectId",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Créer un commentaire",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"projectId\": 1,\r\n    \"authorId\": 2,\r\n    \"content\": \"Un avis sur le projet\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/comments",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "comments"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Modifier un commentaire",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"content\": \"Texte modifié\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/comments/cSX_OsHNXBA",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "comments",
+                    "cSX_OsHNXBA"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Lister les surcharges de Projets",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/projects",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "projects"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Supprimer un commentaire",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/comments/cSX_OsHNXBA",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "comments",
+                    "cSX_OsHNXBA"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "CRM / ERP",
+          "item": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "reqresUrl",
+      "value": ""
+    },
+    {
+      "key": "randomUserUrl",
+      "value": ""
+    },
+    {
+      "key": "dummyJsonUrl",
+      "value": ""
+    },
+    {
+      "key": "openWeatherUrl",
+      "value": ""
+    },
+    {
+      "key": "placeholderUrl",
+      "value": ""
+    },
+    {
+      "key": "localUrl",
+      "value": ""
+    }
+  ]
+}
