@@ -1,11 +1,11 @@
 {
   "info": {
-    "_postman_id": "07ca5ca8-e602-4ffd-9e7f-6b83a0b0a704",
+    "_postman_id": "70c277e1-afe9-4409-8ea3-baac8fe94dc8",
     "name": "OMNI-ERP",
     "description": "**Contournements documentés**\n\nCertaines données nécessaires au métier ne sont fournies par aucune API. Elles sont dérivées de façon déterministe (un même id produit toujours la même valeur) pour rester stables d'un rafraîchissement à l'autre.\n\n| Donnée manquante | Domaine | Solution retenue |\n| --- | --- | --- |\n| Rôle utilisateur, absent de Reqres | Auth (Jessica) | Dérivé de l'id du compte (cycle admin/manager/user) |\n| Département/équipe/compétences, absents de Reqres et RandomUser | RH (Jessica) | Dérivés de l'id du compte |\n| Statut/échéance des projets et tâches, absents de JSONPlaceholder | PMS (Jessica) | Dérivés de l'id, ou stockés en surcharge locale une fois modifiés |\n| Note de satisfaction, absente des commentaires JSONPlaceholder | CRM (Youssef) | Dérivée de l'id du commentaire par hachage déterministe (NPS obtenu : 25 sur les 500 avis) |\n| Statut et date des commandes, absents des paniers DummyJSON | ERP (Youssef) | Stockés localement (JSON Server) et joints aux lignes distantes |",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "48783125",
-    "_collection_link": "https://go.postman.co/collection/48783125-07ca5ca8-e602-4ffd-9e7f-6b83a0b0a704?source=collection_link"
+    "_exporter_id": "48786203",
+    "_collection_link": "https://go.postman.co/collection/48786203-70c277e1-afe9-4409-8ea3-baac8fe94dc8?source=collection_link"
   },
   "item": [
     {
@@ -220,11 +220,252 @@
     },
     {
       "name": "DummyJSON",
-      "item": []
+      "item": [
+        {
+          "name": "Lister les clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{dummyJsonUrl}}/users?limit=10&skip=0&select=firstName,lastName,email,phone,image,company,address,role",
+              "host": [
+                "{{dummyJsonUrl}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "select",
+                  "value": "firstName,lastName,email,phone,image,company,address,role"
+                }
+              ]
+            },
+            "description": "Liste paginée des clients du CRM.\n\nLe paramètre select restreint les champs renvoyés. Sans lui, la réponse contient des mots de passe, des numéros de carte bancaire et des identifiants nationaux, qui ne doivent jamais transiter jusqu'à l'application."
+          },
+          "response": []
+        },
+        {
+          "name": "Rechercher un client",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Détail d'un client",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{dummyJsonUrl}}/users/1?select=firstName,lastName,email,company,address",
+              "host": [
+                "{{dummyJsonUrl}}"
+              ],
+              "path": [
+                "users",
+                "1"
+              ],
+              "query": [
+                {
+                  "key": "select",
+                  "value": "firstName,lastName,email,company,address"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Lister tous les paniers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{dummyJsonUrl}}/carts?limit=0",
+              "host": [
+                "{{dummyJsonUrl}}"
+              ],
+              "path": [
+                "carts"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Détail d'un panier",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Paniers d'un client",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Lister les produits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rechercher un produit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Produits d'une catégorie",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Détail d'un produit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Liste des catégories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        }
+      ]
     },
     {
       "name": "OpenWeatherMap",
-      "item": []
+      "item": [
+        {
+          "name": "Météo actuelle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{openWeatherUrl}}/weather?q=Évry,FR&appid={{openWeatherKey}}&units=metric&lang=fr",
+              "host": [
+                "{{openWeatherUrl}}"
+              ],
+              "path": [
+                "weather"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Évry,FR"
+                },
+                {
+                  "key": "appid",
+                  "value": "{{openWeatherKey}}"
+                },
+                {
+                  "key": "units",
+                  "value": "metric"
+                },
+                {
+                  "key": "lang",
+                  "value": "fr"
+                }
+              ]
+            },
+            "description": "Conditions météo actuelles affichées sur le tableau de bord.\n\nLa vitesse du vent est renvoyée en mètres par seconde malgré le paramètre units=metric : elle est convertie en km/h côté application.\n\nChaque poste dispose de sa propre clé, renseignée dans le fichier .env sous VITE_OPENWEATHER_API_KEY."
+          },
+          "response": []
+        },
+        {
+          "name": "Prévisions 5 jours",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{openWeatherUrl}}/forecast?q=Évry,FR&appid={{openWeatherKey}}&units=metric&lang=fr",
+              "host": [
+                "{{openWeatherUrl}}"
+              ],
+              "path": [
+                "forecast"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Évry,FR"
+                },
+                {
+                  "key": "appid",
+                  "value": "{{openWeatherKey}}"
+                },
+                {
+                  "key": "units",
+                  "value": "metric"
+                },
+                {
+                  "key": "lang",
+                  "value": "fr"
+                }
+              ]
+            },
+            "description": "Prévisions sur cinq jours, par relevés de trois heures.\n\nLes relevés sont agrégés par journée côté application pour en extraire minimale, maximale et condition dominante. Le premier jour est incomplet, les relevés commençant à l'heure courante."
+          },
+          "response": []
+        }
+      ]
     },
     {
       "name": "JSONPlaceHolder",
@@ -272,7 +513,32 @@
         },
         {
           "name": "CRM",
-          "item": []
+          "item": [
+            {
+              "name": "Lister les avis clients",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{placeholderUrl}}/comments?postId=1",
+                  "host": [
+                    "{{placeholderUrl}}"
+                  ],
+                  "path": [
+                    "comments"
+                  ],
+                  "query": [
+                    {
+                      "key": "postId",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "description": "Avis clients rattachés à un client via le postId.\n\nCette API ne renvoie aucune note : le score de satisfaction utilisé pour le calcul du NPS est dérivé de l'identifiant du commentaire par une fonction de hachage déterministe. Un même commentaire produit donc toujours le même score, ce qui rend l'indicateur stable d'un rafraîchissement à l'autre."
+              },
+              "response": []
+            }
+          ]
         }
       ]
     },
@@ -719,7 +985,365 @@
         },
         {
           "name": "CRM / ERP",
-          "item": []
+          "item": [
+            {
+              "name": "Profils clients",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Étapes du pipeline",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Opportunités par étape",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Détail d'une opportunité",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Métadonnées de commande",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Fournisseurs",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Détail d'un fournisseur",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Mouvements de stock",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Journal d'audit",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Créer un profil client",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"clientId\": 5,\r\n  \"status\": \"Lead\",\r\n  \"notes\": \"Contact entrant via le salon de juin\",\r\n  \"updatedAt\": \"2026-09-01T10:00:00.000Z\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/clientProfiles",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "clientProfiles"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Créer une opportunité",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"title\": \"Refonte du portail client\",\r\n  \"clientId\": 1,\r\n  \"stageId\": \"prospection\",\r\n  \"amount\": 48000,\r\n  \"expectedCloseDate\": \"2026-12-31\",\r\n  \"owner\": { \"id\": 101, \"name\": \"Camille Roussel\" },\r\n  \"createdAt\": \"2026-09-01T10:00:00.000Z\",\r\n  \"updatedAt\": \"2026-09-01T10:00:00.000Z\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/opportunities",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "opportunities"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Créer un mouvement de stock",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"productId\": 101,\r\n  \"type\": \"entree\",\r\n  \"quantity\": 50,\r\n  \"reason\": \"Réception fournisseur\",\r\n  \"occurredAt\": \"2026-09-01T10:00:00.000Z\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/stockMovements",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "stockMovements"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Créer une métadonnée de commande",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"orderId\": 51,\r\n  \"status\": \"confirmee\",\r\n  \"placedAt\": \"2026-09-01T10:00:00.000Z\",\r\n  \"updatedAt\": \"2026-09-01T10:00:00.000Z\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/orders",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Journaliser une action",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"userId\": 1,\r\n  \"userEmail\": \"utilisateur@exemple.fr\",\r\n  \"action\": \"opportunity.delete\",\r\n  \"result\": \"succes\",\r\n  \"details\": \"Opportunité 12 supprimée\",\r\n  \"userAgent\": \"Mozilla/5.0\",\r\n  \"origin\": \"http://localhost:5173\",\r\n  \"occurredAt\": \"2026-09-01T10:00:00.000Z\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/auditLog",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "auditLog"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Qualifier un client",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"status\": \"Active\",\r\n  \"notes\": \"Relance effectuée\",\r\n  \"updatedAt\": \"2026-09-01T10:00:00.000Z\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/clientProfiles/1",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "clientProfiles",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Déplacer une opportunité",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"stageId\": \"negociation\",\r\n  \"updatedAt\": \"2026-09-01T10:00:00.000Z\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/opportunities/1",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "opportunities",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Changer le statut d'une commande",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"status\": \"preparation\",\r\n  \"updatedAt\": \"2026-09-01T10:00:00.000Z\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/orders/1",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "orders",
+                    "1"
+                  ]
+                },
+                "description": "Le passage en préparation déclenche la création des sorties de stock correspondantes, l'annulation crée les entrées compensatoires. Ces mouvements sont générés par l'application, pas par cette requête."
+              },
+              "response": []
+            },
+            {
+              "name": "Évaluer un fournisseur",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"evaluations\": [\r\n    { \"id\": 1, \"score\": 5, \"comment\": \"Livraisons en avance\", \"createdAt\": \"2026-05-14T10:00:00.000Z\" },\r\n    { \"id\": 2, \"score\": 4, \"comment\": \"Conforme\", \"createdAt\": \"2026-09-01T10:00:00.000Z\" }\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/suppliers/1",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "suppliers",
+                    "1"
+                  ]
+                },
+                "description": "La note moyenne n'est pas transmise : elle est recalculée à la lecture depuis la liste des évaluations. Une moyenne stockée finirait par diverger des avis qui la composent."
+              },
+              "response": []
+            },
+            {
+              "name": "Supprimer une opportunité",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/opportunities/1",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "opportunities",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
         }
       ]
     }
@@ -751,27 +1375,31 @@
   "variable": [
     {
       "key": "reqresUrl",
-      "value": ""
+      "value": "\thttps://reqres.in/api"
     },
     {
       "key": "randomUserUrl",
-      "value": ""
+      "value": "https://randomuser.me/api"
     },
     {
       "key": "dummyJsonUrl",
-      "value": ""
+      "value": "https://dummyjson.com"
     },
     {
       "key": "openWeatherUrl",
+      "value": "https://api.openweathermap.org/data/2.5"
+    },
+    {
+      "key": "openWeatherKey",
       "value": ""
     },
     {
       "key": "placeholderUrl",
-      "value": ""
+      "value": "https://jsonplaceholder.typicode.com"
     },
     {
       "key": "localUrl",
-      "value": ""
+      "value": "http://localhost:3001"
     }
   ]
 }
