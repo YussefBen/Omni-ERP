@@ -2,6 +2,7 @@
   "info": {
     "_postman_id": "07ca5ca8-e602-4ffd-9e7f-6b83a0b0a704",
     "name": "OMNI-ERP",
+    "description": "**Contournements documentés**\n\nCertaines données nécessaires au métier ne sont fournies par aucune API. Elles sont dérivées de façon déterministe (un même id produit toujours la même valeur) pour rester stables d'un rafraîchissement à l'autre.\n\n| Donnée manquante | Domaine | Solution retenue |\n| --- | --- | --- |\n| Rôle utilisateur, absent de Reqres | Auth (Jessica) | Dérivé de l'id du compte (cycle admin/manager/user) |\n| Département/équipe/compétences, absents de Reqres et RandomUser | RH (Jessica) | Dérivés de l'id du compte |\n| Statut/échéance des projets et tâches, absents de JSONPlaceholder | PMS (Jessica) | Dérivés de l'id, ou stockés en surcharge locale une fois modifiés |\n| Note de satisfaction, absente des commentaires JSONPlaceholder | CRM (Youssef) | Dérivée de l'id du commentaire par hachage déterministe (NPS obtenu : 25 sur les 500 avis) |\n| Statut et date des commandes, absents des paniers DummyJSON | ERP (Youssef) | Stockés localement (JSON Server) et joints aux lignes distantes |",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "48783125",
     "_collection_link": "https://go.postman.co/collection/48783125-07ca5ca8-e602-4ffd-9e7f-6b83a0b0a704?source=collection_link"
