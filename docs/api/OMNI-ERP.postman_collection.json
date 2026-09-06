@@ -94,7 +94,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{reqresUrl}}/users?page=1",
+              "raw": "{{reqresUrl}}/users?page=2",
               "host": [
                 "{{reqresUrl}}"
               ],
@@ -104,7 +104,7 @@
               "query": [
                 {
                   "key": "page",
-                  "value": "1"
+                  "value": "2"
                 }
               ]
             },
@@ -226,11 +226,48 @@
       "item": []
     },
     {
-      "name": "JsonPlaceHolder",
+      "name": "JSONPlaceHolder",
       "item": [
         {
           "name": "PMS",
-          "item": []
+          "item": [
+            {
+              "name": "Lister les projets  (base externe)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{placeholderUrl}}/posts",
+                  "host": [
+                    "{{placeholderUrl}}"
+                  ],
+                  "path": [
+                    "posts"
+                  ]
+                },
+                "description": "Source en lecture seule.  \nStatut, échéance et progression ne sont pas existants car dérivés côtés applications."
+              },
+              "response": []
+            },
+            {
+              "name": "Lister les tâches (base externe)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{placeholderUrl}}/todos",
+                  "host": [
+                    "{{placeholderUrl}}"
+                  ],
+                  "path": [
+                    "todos"
+                  ]
+                },
+                "description": "Source en lecture seule.  \nLien vers projet inexistant nativement. il est dérivé de l'id de la tâche/"
+              },
+              "response": []
+            }
+          ]
         },
         {
           "name": "CRM",
@@ -243,11 +280,412 @@
       "item": [
         {
           "name": "RH",
-          "item": []
+          "item": [
+            {
+              "name": "Lister les congés",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/leaveRequests",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "leaveRequests"
+                  ]
+                },
+                "description": "Filtres possibles en query string"
+              },
+              "response": []
+            },
+            {
+              "name": "Créer une demande de congé",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"employeeId\": 5,\r\n    \"type\": \"conges_payes\",\r\n    \"startDate\": \"2026-10-01\",\r\n    \"endDate\": \"2026-10-05\",\r\n    \"reason\": \"Vacances\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/leaveRequests",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "leaveRequests"
+                  ]
+                },
+                "description": "Précision: le statut est toujours 'pending' à la création"
+              },
+              "response": []
+            },
+            {
+              "name": "Valider ou refuser un congé",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\": \"approved\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/leaveRequests/NCg5ALff9Q0",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "leaveRequests",
+                    "NCg5ALff9Q0"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Présence du jour",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/presence?employeeId=1&date=2026-09-01",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "presence"
+                  ],
+                  "query": [
+                    {
+                      "key": "employeeId",
+                      "value": "1"
+                    },
+                    {
+                      "key": "date",
+                      "value": "2026-09-01"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Check-in",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"employeeId\": 1,\r\n    \"date\": \"2026-09-01\",\r\n    \"checkIn\": \"2026-09-01T08:00:00.000Z\",\r\n    \"checkOut\": null\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/presence",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "presence"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Check-out",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"checkOut\": \"2026-09-01T17:30:00.000Z\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/presence/peWbzhJm0Z4",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "presence",
+                    "peWbzhJm0Z4"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
         },
         {
           "name": "PMS",
-          "item": []
+          "item": [
+            {
+              "name": "Créer un projet",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"id\": 101,\r\n    \"title\": \"Nouveau projet\",\r\n    \"description\": \"Créé dans l'application\",\r\n    \"ownerId\": 1,\r\n    \"status\": \"a_faire\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/projects",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "projects"
+                  ]
+                },
+                "description": "L'id est calculé avant l'appel pour ne jamais entrer en collision avec un id de JSONPlaceHolder"
+              },
+              "response": []
+            },
+            {
+              "name": "Modifier un projet",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\": \"termine\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/projects/JFL_00zj370",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "projects",
+                    "JFL_00zj370"
+                  ]
+                },
+                "description": "Modification stockée en surcharge locale.  \nAucune surcharge existant pour l'ID = l'appli fait un post et pas un patch"
+              },
+              "response": []
+            },
+            {
+              "name": "Supprimer un projet",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/projects/JFL_00zj370",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "projects",
+                    "JFL_00zj370"
+                  ]
+                },
+                "description": "Refusé côté application pour une id en dessous de 100.  \nFonctionne que sur les projets créés dans l'appli."
+              },
+              "response": []
+            },
+            {
+              "name": "Lister les surcharges de tâches",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/tasks",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "tasks"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Créer une tâche",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"id\": 201,\r\n    \"projectId\": 1,\r\n    \"title\": \"Nouvelle tâche\",\r\n    \"status\": \"a_faire\",\r\n    \"estimatedHours\": 4\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/tasks",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "tasks"
+                  ]
+                },
+                "description": "Même logique ID que les projets"
+              },
+              "response": []
+            },
+            {
+              "name": "Modifier une tâche",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\": \"en_cours\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/tasks/1_X_KSmbNqg",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    "1_X_KSmbNqg"
+                  ]
+                },
+                "description": "Déplacer une carte sur un kanban"
+              },
+              "response": []
+            },
+            {
+              "name": "Supprimer une tâche",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/tasks/1_X_KSmbNqg",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    "1_X_KSmbNqg"
+                  ]
+                },
+                "description": "Refusé si ID inférieur ou égal à 200"
+              },
+              "response": []
+            },
+            {
+              "name": "Lister les commentaires d'un projet",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/comments?projectId=1",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "comments"
+                  ],
+                  "query": [
+                    {
+                      "key": "projectId",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Créer un commentaire",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"projectId\": 1,\r\n    \"authorId\": 2,\r\n    \"content\": \"Un avis sur le projet\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/comments",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "comments"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Modifier un commentaire",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"content\": \"Texte modifié\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{localUrl}}/comments/1",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "comments",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
         },
         {
           "name": "CRM / ERP",
@@ -303,8 +741,7 @@
     },
     {
       "key": "localUrl",
-      "value": "",
-      "type": "default"
+      "value": ""
     }
   ]
 }
