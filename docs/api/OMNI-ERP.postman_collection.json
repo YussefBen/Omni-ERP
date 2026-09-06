@@ -558,11 +558,8 @@
             },
             {
               "name": "Modifier une tâche",
-              "protocolProfileBehavior": {
-                "disableBodyPruning": true
-              },
               "request": {
-                "method": "GET",
+                "method": "PATCH",
                 "header": [],
                 "body": {
                   "mode": "raw",
@@ -657,11 +654,8 @@
             },
             {
               "name": "Modifier un commentaire",
-              "protocolProfileBehavior": {
-                "disableBodyPruning": true
-              },
               "request": {
-                "method": "GET",
+                "method": "PATCH",
                 "header": [],
                 "body": {
                   "mode": "raw",
@@ -673,13 +667,48 @@
                   }
                 },
                 "url": {
-                  "raw": "{{localUrl}}/comments/1",
+                  "raw": "{{localUrl}}/comments/cSX_OsHNXBA",
                   "host": [
                     "{{localUrl}}"
                   ],
                   "path": [
                     "comments",
-                    "1"
+                    "cSX_OsHNXBA"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Lister les surcharges de Projets",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/projects",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "projects"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Supprimer un commentaire",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{localUrl}}/comments/cSX_OsHNXBA",
+                  "host": [
+                    "{{localUrl}}"
+                  ],
+                  "path": [
+                    "comments",
+                    "cSX_OsHNXBA"
                   ]
                 }
               },
