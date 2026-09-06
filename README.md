@@ -217,7 +217,7 @@ npx tsc -b && npm run build && npx vitest run
 
 ## Tests
 
-583 tests répartis sur 46 fichiers.
+625 tests répartis sur 55 fichiers, pour une couverture globale de 85 %.
 
 Les appels réseau sont interceptés par MSW : les tests ne dépendent ni d'une connexion,
 ni de la disponibilité des API, et peuvent affirmer des valeurs exactes.
@@ -232,17 +232,17 @@ Le rapport détaillé est produit dans `coverage/index.html`.
 
 | Domaine | Instructions |
 |---|---|
+| Paramètres | 100 % |
 | Intelligence d'affaires | 98 à 100 % |
 | Sécurité | 97 à 99 % |
-| Relation client | 87 à 95 % |
+| Relation client | 97 % |
 | Ressources d'entreprise | 93 à 97 % |
 | Tableau de bord | 91 à 100 % |
+| Gestion de projets | 86 à 96 % |
+| Ressources humaines | 88 à 100 % |
 | Utilitaires partagés | 98 % |
-| Ressources humaines | Fonctions dérivées et hooks couverts |
-| Gestion de projets | Fonctions dérivées, hooks et mutations optimistes couverts |
-| Paramètres | Couvert |
-| Supervision (monitoring) | Health checks couverts (cas ok, down, dégradé) |
-| Authentification | Rôle dérivé, connexion, inscription et session couverts |
+| Authentification | 74 à 98 % hors composants d'ordre supérieur |
+| Supervision | 84 % sur les services, hooks partiellement couverts |
 | Composants d'interface | à compléter |
 
 ### Ce qui est testé
