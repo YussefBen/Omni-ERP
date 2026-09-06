@@ -170,6 +170,16 @@ Six sources alimentent l'application.
 | OpenWeatherMap | Météo et prévisions | Tableau de bord |
 | JSON Server | Données métier persistées | Tous |
 
+## Documentation d'API
+
+La collection Postman couvre les 61 endpoints des six sources de données, avec descriptions et exemples de réponse.
+
+Consultation en ligne : https://documenter.getpostman.com/view/48786203/2sBYAvwr1q
+
+Import local : `docs/api/OMNI-ERP.postman_collection.json`
+
+Les requêtes vers JSON Server nécessitent que l'API locale soit démarrée avec `npm run server`.
+
 ### Contournements documentés
 
 Trois données nécessaires au métier ne sont fournies par aucune API. Elles sont dérivées
