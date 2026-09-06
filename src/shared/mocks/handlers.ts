@@ -483,6 +483,15 @@ const myJsonServerHandlers = [
   }),
 ];
 
+/* ---------- Services externes de supervision ---------- */
+
+// Sans ces interceptions, les tests de supervision publient réellement
+// dans le canal Slack de l'équipe et envoient des traces à Honeycomb.
+const monitoringHandlers = [
+  http.post('https://hooks.slack.com/services/*', () => new HttpResponse(null, { status: 200 })),
+  http.post('https://api.honeycomb.io/*', () => new HttpResponse(null, { status: 200 })),
+];
+
 export const handlers = [
   ...dummyJsonHandlers,
   ...placeholderHandlers,
@@ -491,4 +500,5 @@ export const handlers = [
   ...reqresHandlers,
   ...randomUserHandlers,
   ...myJsonServerHandlers,
+  ...monitoringHandlers,
 ];
