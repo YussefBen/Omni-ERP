@@ -137,6 +137,8 @@ Tout est généré côté navigateur — aucun serveur n'intervient.
 
 ---
 
-## Point ouvert
+## Sources des indicateurs
 
-`data.projects` et `data.hr` reposent sur des données simulées, en attendant `getProjectsKPI()` et `getHRKPI()` du Membre A. Les structures sont déjà convenues : le raccordement ne changera que deux imports dans `useKPIs.ts`, sans toucher aux écrans.
+`data.sales`, `data.stock` et `data.crm` sont calculés depuis les commandes, le catalogue produits et le pipeline de vente.
+
+`data.projects` et `data.hr` viennent des domaines PMS et HRM, via `getProjectsKPI()` et `getHRKPI()`. Ces deux fonctions sont asynchrones et passent par React Query.

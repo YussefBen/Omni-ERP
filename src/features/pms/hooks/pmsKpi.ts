@@ -1,4 +1,4 @@
-// KPI Projets pour la BI de B, previous=true pour la période précédente
+// KPI Projets pour la BI, previous=true pour la période précédente
 
 import { fetchAllProjects } from '../services/pmsService';
 import type { ProjectsKPI } from '../types';

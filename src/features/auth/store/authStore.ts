@@ -4,6 +4,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AUTH_STORAGE_KEY } from '@/shared/config/constants';
+import { clearSentryUser, setSentryUser } from '@/features/monitoring';
 import type { Role } from '@/shared/types';
 import type { Session, User } from '../types';
 
@@ -44,7 +45,7 @@ export const useAuthStore = create<AuthState>()(
       failedAttempts: 0,
       lockedUntil: null,
 
-      setSession: (session) =>
+      setSession: (session) => {
         set({
           user: session.user,
           token: session.token,
@@ -53,16 +54,20 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: true,
           failedAttempts: 0,
           lockedUntil: null,
-        }),
+        });
+        setSentryUser(session.user.id, session.user.role);
+      },
 
-      logout: () =>
+      logout: () => {
         set({
           user: null,
           token: null,
           role: null,
           expiresAt: null,
           isAuthenticated: false,
-        }),
+        });
+          clearSentryUser();
+      },
 
       refreshExpiry: () => {
         if (!get().isAuthenticated) return;

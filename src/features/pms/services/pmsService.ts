@@ -135,6 +135,14 @@ async function fetchAllProjects(): Promise<Project[]> {
   }));
 }
 
+// Un seul projet pour un écran de détail
+export async function fetchProjectById(id: number): Promise<Project> {
+  const projects = await fetchAllProjects();
+  const project = projects.find((p) => p.id === id);
+  if (!project) throw new Error(`Projet ${id} introuvable`);
+  return project;
+}
+
 
 
 // Prochain id local, toujours au-dessus des 100 posts JSONPlaceholder (pas de collision)
@@ -256,6 +264,14 @@ export async function fetchTasks(filters: TaskFilters = {}): Promise<PaginatedTa
     page,
     pageSize,
   };
+}
+
+// Une seule tâche pour un écran de détail
+export async function fetchTaskById(id: number): Promise<Task> {
+  const tasks = await fetchMergedTasks();
+  const task = tasks.find((t) => t.id === id);
+  if (!task) throw new Error(`Tâche ${id} introuvable`);
+  return task;
 }
 
 

@@ -11,13 +11,17 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    env: {
+      VITE_OPENWEATHER_API_KEY: 'cle-de-test',
+      VITE_JSON_SERVER_URL: 'http://localhost:3001',
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
       // La couverture porte sur le code métier, pas sur la configuration
       // ni sur les points d'entrée qui ne font que réexporter.
-      include: ['src/features/**/*.{ts,tsx}'],
-      exclude: ['**/index.ts', '**/types/**', '**/*.d.ts'],
+      include: ['src/features/**/*.{ts,tsx}', 'src/shared/**/*.{ts,tsx}'],
+      exclude: ['**/index.ts', '**/types/**', '**/*.d.ts', '**/*.test.{ts,tsx}'],
     },
   },
 });

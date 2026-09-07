@@ -45,8 +45,8 @@ export function useKPIs(preset: PeriodPreset = 'trois-mois'): UseKpisResult {
    const hrQuery = useQuery({
     queryKey: HR_KPI_KEY,
     queryFn: async () => {
-      const [current, previous] = await Promise.all([getHRKPI(), getHRKPI(true)]);
-      return { current, previous };
+      const [currentValue, previousValue] = await Promise.all([getHRKPI(), getHRKPI(true)]);
+      return { currentValue, previousValue };
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -54,11 +54,11 @@ export function useKPIs(preset: PeriodPreset = 'trois-mois'): UseKpisResult {
     const projectsQuery = useQuery({
     queryKey: PROJECTS_KPI_KEY,
     queryFn: async () => {
-      const [current, previous] = await Promise.all([
+      const [currentValue, previousValue] = await Promise.all([
         getProjectsKPI(),
         getProjectsKPI(true),
       ]);
-      return { current, previous };
+      return { currentValue, previousValue };
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -97,8 +97,11 @@ const sources = [ordersQuery, hrQuery, projectsQuery, catalog, movements, opport
         range.current,
         range.previous,
       ),
-              projects: buildProjectsKpis(projectsQuery.data.current, projectsQuery.data.previous),
-            hr: buildHrKpis(hrQuery.data.current, hrQuery.data.previous),
+              projects: buildProjectsKpis(
+        projectsQuery.data.currentValue,
+        projectsQuery.data.previousValue,
+      ),
+      hr: buildHrKpis(hrQuery.data.currentValue, hrQuery.data.previousValue),
       range,
     };
     }, [

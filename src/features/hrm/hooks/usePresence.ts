@@ -6,7 +6,7 @@ import { hrmKeys } from './hrmKeys';
 import type { PresenceEntry } from '../types';
 
 interface UsePresenceResult {
-  data: PresenceEntry | undefined;
+  data: PresenceEntry | null | undefined;
   isLoading: boolean;
   isError: boolean;
   error: Error | null;

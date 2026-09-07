@@ -1,7 +1,7 @@
 // Accès au jeton CSRF depuis un composant, pour un formulaire qui
 // n'utiliserait pas Axios ou pour l'afficher en démonstration.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { getCsrfToken, rotateCsrfToken } from '../services/csrf';
 
 interface UseCsrfResult {
@@ -11,13 +11,9 @@ interface UseCsrfResult {
 }
 
 export function useCsrf(): UseCsrfResult {
-  const [token, setToken] = useState<string>('');
-
-  // Le jeton est lu après le montage : sessionStorage n'existe pas
-  // pendant un rendu côté serveur.
-  useEffect(() => {
-    setToken(getCsrfToken());
-  }, []);
+  // Initialisation paresseuse plutôt qu'un effet : la lecture du jeton
+  // n'a lieu qu'au premier rendu, sans déclencher de rendu supplémentaire.
+  const [token, setToken] = useState<string>(() => getCsrfToken());
 
   const rotate = useCallback(() => {
     setToken(rotateCsrfToken());

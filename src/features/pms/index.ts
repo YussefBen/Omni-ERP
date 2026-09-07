@@ -1,5 +1,7 @@
 export { useProjects } from './hooks/useProjects';
+export { useProject } from './hooks/useProject';
 export { useTasks } from './hooks/useTasks';
+export { useTask } from './hooks/useTask';
 export { getProjectProgress } from './hooks/projectProgress';
 export {
   useComments,
