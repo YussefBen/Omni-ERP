@@ -7,6 +7,10 @@ paramètres — autour de six sources de données distinctes.
 
 Projet réalisé en équipe de trois dans le cadre de la formation.
 
+**Démo en ligne** : https://omni-erp-nine.vercel.app
+
+Les données locales — pipeline, fournisseurs, stocks, commandes — ne sont pas disponibles sur la version déployée : elles proviennent de JSON Server, qui s'exécute sur le poste de développement. La démonstration complète nécessite un lancement local.
+
 ---
 
 ## Sommaire
