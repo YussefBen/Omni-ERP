@@ -1,0 +1,88 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 1rem);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 1rem);
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.name {
+  margin: 0;
+}
+
+.jobTitle {
+  margin: 0;
+  color: var(--color-text-muted, #666);
+  font-size: 0.9rem;
+}
+
+.infoList {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--spacing-xs, 0.25rem) var(--spacing-md, 1rem);
+  margin: 0;
+}
+
+.infoList dt {
+  font-weight: 600;
+  color: var(--color-text-muted, #666);
+}
+
+.infoList dd {
+  margin: 0;
+  color: var(--color-text, #1a1a1a);
+}
+
+.skillList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 0.25rem);
+}
+
+.skillItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-xs, 0.25rem) 0;
+}
+
+.skillBadge {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm, 4px);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.junior {
+  background-color: var(--color-info-bg, #e6f0ff);
+  color: var(--color-info, #3b82f6);
+}
+
+.confirme {
+  background-color: var(--color-success-bg, #e6f7ed);
+  color: var(--color-success, #16a34a);
+}
+
+.expert {
+  background-color: var(--color-warning-bg, #fff4e5);
+  color: var(--color-warning, #f5a623);
+}
+
+.empty {
+  color: var(--color-text-muted, #666);
+  font-size: 0.9rem;
+}
