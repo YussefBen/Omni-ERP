@@ -4,8 +4,8 @@ import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
 import { useEmployees } from '../../hooks/useEmployees';
 import { useTeams } from '../../hooks/useTeams';
-import { EmployeeProfile } from '../EmployeeProfile/EmployeeProfile';
-import type { EmployeeFilters } from '../../types';
+import { EmployeeProfile } from '../EmployeeProfile/EmployeeProfile.tsx';
+import type { EmployeeFilters } from '../../types/index.ts';
 import styles from './EmployeeDirectory.module.css';
 
 export function EmployeeDirectory() {
