@@ -1,6 +1,6 @@
 import { Card } from '@/shared/components/Card/Card';
 import { Tabs } from '@/shared/components/Tabs/Tabs';
-import type { Employee } from '../types/index.ts';
+import type { Employee } from '@/features/hrm/types';
 import styles from './EmployeeProfile.module.css';
 
 const SKILL_LEVEL_LABELS: Record<Employee['skills'][number]['level'], string> = {
