@@ -4,7 +4,7 @@
 
 **Application web de gestion d'entreprise — React et TypeScript**
 
-Jessica · Youssef Ben Chouchane · Rafael Da Silva Mesquita
+Jessica Dubois · Youssef Ben Chouchane · Rafael Da Silva Mesquita
 
 Septembre 2026
 
