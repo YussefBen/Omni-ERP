@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { usePageViewTracking } from '@/features/monitoring';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
 import { AppLayout } from './app/layout/AppLayout';
+import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 
 // Les deux écrans d'authentification restent chargés avec l'application :
 // ce sont les premiers affichés, les différer ajouterait une attente
@@ -103,6 +104,7 @@ export function AppRouter() {
       <Route
         path="*"
         element={
+          <ProtectedRoute>
           <AppLayout>
             {/* Suspense placé à l'intérieur de la mise en page : seule la
                 zone de contenu affiche l'indicateur pendant le
@@ -134,6 +136,7 @@ export function AppRouter() {
 
                 <Route path="*" element={<PlaceholderPage title="Page introuvable" />} />
               </Routes>
+              </ProtectedRoute>
             </Suspense>
           </AppLayout>
         }
