@@ -3,6 +3,7 @@
 
 import {
   keepPreviousData,
+  queryOptions,
   useMutation,
   useQuery,
   useQueryClient,
@@ -53,20 +54,27 @@ interface UseOrdersResult {
   totalPages: number;
 }
 
-export function useOrders(filters: OrderFilters = {}): UseOrdersResult {
-  const page = filters.page ?? 1;
-  const pageSize = filters.pageSize ?? DEFAULT_PAGE_SIZE;
-
+// Description unique de la requête « liste des commandes », partagée par
+// l'écran et par le préchargement au survol de la navigation.
+export function orderListOptions(filters: OrderFilters = {}) {
   const appliedFilters: OrderFilters = {
-    page,
-    pageSize,
+    page: filters.page ?? 1,
+    pageSize: filters.pageSize ?? DEFAULT_PAGE_SIZE,
     status: filters.status,
     clientId: filters.clientId,
   };
 
-  const query = useQuery({
+  return queryOptions({
     queryKey: erpKeys.orderList(appliedFilters),
     queryFn: () => fetchOrders(appliedFilters),
+  });
+}
+
+export function useOrders(filters: OrderFilters = {}): UseOrdersResult {
+  const pageSize = filters.pageSize ?? DEFAULT_PAGE_SIZE;
+
+  const query = useQuery({
+    ...orderListOptions(filters),
     placeholderData: keepPreviousData,
   });
 

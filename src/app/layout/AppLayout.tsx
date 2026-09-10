@@ -1,5 +1,5 @@
 import { useCallback, useState, type ReactNode } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { ThemeToggle } from '@/shared/components/ThemeToggle/ThemeToggle';
 import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
@@ -72,7 +72,6 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isOnline = useOnlineStatus();
-  const location = useLocation();
   const queryClient = useQueryClient();
 
   // Précharge le fichier de l'écran survolé, et ses données si elles sont
@@ -139,9 +138,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                     className={({ isActive }) =>
                       `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
                     }
-                    // aria-current indique aux lecteurs d'écran quelle page
-                    // est affichée, ce que la couleur seule ne transmet pas.
-                    aria-current={location.pathname === item.to ? 'page' : undefined}
+                    // NavLink pose lui-même aria-current="page" sur le lien
+                    // actif, sous-pages comprises (/clients/12), ce que la
+                    // couleur seule ne transmet pas aux lecteurs d'écran.
                     onMouseEnter={() => preload(item.to)}
                     onFocus={() => preload(item.to)}
                     onClick={closeMenu}
