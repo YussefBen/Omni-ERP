@@ -1,20 +1,20 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { usePageViewTracking } from '@/features/monitoring';
-import { LoginPage } from './pages/LoginPage/LoginPage';
-import { RegisterPage } from './pages/RegisterPage/RegisterPage';
-import { ProjectsPage } from './pages/ProjectsPage/ProjectsPage';
-import { ProjectDetailPage } from './pages/ProjectDetailPage/ProjectDetailPage';
-import { EmployeesPage } from './pages/EmployeesPage/EmployeesPage';
-import { TeamsPage } from './pages/TeamsPage/TeamsPage';
-import { LeaveRequestsPage } from './pages/LeaveRequestsPage/LeaveRequestsPage';
-import { ClientsPage } from './pages/ClientsPage/ClientsPage';
-import { PipelinePage } from './pages/PipelinePage/PipelinePage';
-import { ProductsPage } from './pages/ProductsPage/ProductsPage';
-import { OrdersPage } from './pages/OrdersPage/OrdersPage';
-import { SuppliersPage } from './pages/SuppliersPage/SuppliersPage';
-import { DashboardPage } from './pages/DashboardPage/DashboardPage';
-import { SettingsPage } from './pages/SettingsPage/SettingsPage';
-import { ReportsPage } from './pages/ReportsPage/ReportsPage';
+import { LoginPage } from './app/pages/LoginPage/LoginPage';
+import { RegisterPage } from './app/pages/RegisterPage/RegisterPage';
+import { ProjectsPage } from './app/pages/ProjectsPage/ProjectsPage';
+import { ProjectDetailPage } from './app/pages/ProjectDetailPage/ProjectDetailPage';
+import { EmployeesPage } from './app/pages/EmployeesPage/EmployeesPage';
+import { TeamsPage } from './app/pages/TeamsPage/TeamsPage';
+import { LeaveRequestsPage } from './app/pages/LeaveRequestsPage/LeaveRequestsPage';
+import { ClientsPage } from './app/pages/ClientsPage/ClientsPage';
+import { PipelinePage } from './app/pages/PipelinePage/PipelinePage';
+import { ProductsPage } from './app/pages/ProductsPage/ProductsPage';
+import { OrdersPage } from './app/pages/OrdersPage/OrdersPage';
+import { SuppliersPage } from './app/pages/SuppliersPage/SuppliersPage';
+import { DashboardPage } from './app/pages/DashboardPage/DashboardPage';
+import { SettingsPage } from './app/pages/SettingsPage/SettingsPage';
+import { ReportsPage } from './app/pages/ReportsPage/ReportsPage';
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
