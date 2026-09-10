@@ -1,20 +1,83 @@
+import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { usePageViewTracking } from '@/features/monitoring';
+import { Spinner } from '@/shared/components/Spinner/Spinner';
+
+// Les deux écrans d'authentification restent chargés avec l'application :
+// ce sont les premiers affichés, les différer ajouterait une attente
+// là où l'utilisateur en remarquerait le plus l'effet.
 import { LoginPage } from './app/pages/LoginPage/LoginPage';
 import { RegisterPage } from './app/pages/RegisterPage/RegisterPage';
-import { ProjectsPage } from './app/pages/ProjectsPage/ProjectsPage';
-import { ProjectDetailPage } from './app/pages/ProjectDetailPage/ProjectDetailPage';
-import { EmployeesPage } from './app/pages/EmployeesPage/EmployeesPage';
-import { TeamsPage } from './app/pages/TeamsPage/TeamsPage';
-import { LeaveRequestsPage } from './app/pages/LeaveRequestsPage/LeaveRequestsPage';
-import { ClientsPage } from './app/pages/ClientsPage/ClientsPage';
-import { PipelinePage } from './app/pages/PipelinePage/PipelinePage';
-import { ProductsPage } from './app/pages/ProductsPage/ProductsPage';
-import { OrdersPage } from './app/pages/OrdersPage/OrdersPage';
-import { SuppliersPage } from './app/pages/SuppliersPage/SuppliersPage';
-import { DashboardPage } from './app/pages/DashboardPage/DashboardPage';
-import { SettingsPage } from './app/pages/SettingsPage/SettingsPage';
-import { ReportsPage } from './app/pages/ReportsPage/ReportsPage';
+
+// Chargement différé pour tous les autres écrans. Chacun devient un fichier
+// séparé que le navigateur ne télécharge qu'au moment où l'utilisateur
+// s'y rend. Sans cela, ouvrir la page de connexion téléchargerait aussi
+// les graphiques, la génération de PDF et l'ensemble des écrans métier.
+//
+// Les fonctions d'import sont extraites en constantes pour être réutilisées
+// par le préchargement au survol : survoler un lien déclenche le
+// téléchargement avant même le clic.
+const loadDashboard = () => import('./app/pages/DashboardPage/DashboardPage');
+const loadProjects = () => import('./app/pages/ProjectsPage/ProjectsPage');
+const loadProjectDetail = () => import('./app/pages/ProjectDetailPage/ProjectDetailPage');
+const loadEmployees = () => import('./app/pages/EmployeesPage/EmployeesPage');
+const loadTeams = () => import('./app/pages/TeamsPage/TeamsPage');
+const loadLeaveRequests = () => import('./app/pages/LeaveRequestsPage/LeaveRequestsPage');
+const loadClients = () => import('./app/pages/ClientsPage/ClientsPage');
+const loadPipeline = () => import('./app/pages/PipelinePage/PipelinePage');
+const loadProducts = () => import('./app/pages/ProductsPage/ProductsPage');
+const loadOrders = () => import('./app/pages/OrdersPage/OrdersPage');
+const loadSuppliers = () => import('./app/pages/SuppliersPage/SuppliersPage');
+const loadSettings = () => import('./app/pages/SettingsPage/SettingsPage');
+const loadReports = () => import('./app/pages/ReportsPage/ReportsPage');
+
+const DashboardPage = lazy(() =>
+  loadDashboard().then((m) => ({ default: m.DashboardPage })),
+);
+const ProjectsPage = lazy(() => loadProjects().then((m) => ({ default: m.ProjectsPage })));
+const ProjectDetailPage = lazy(() =>
+  loadProjectDetail().then((m) => ({ default: m.ProjectDetailPage })),
+);
+const EmployeesPage = lazy(() =>
+  loadEmployees().then((m) => ({ default: m.EmployeesPage })),
+);
+const TeamsPage = lazy(() => loadTeams().then((m) => ({ default: m.TeamsPage })));
+const LeaveRequestsPage = lazy(() =>
+  loadLeaveRequests().then((m) => ({ default: m.LeaveRequestsPage })),
+);
+const ClientsPage = lazy(() => loadClients().then((m) => ({ default: m.ClientsPage })));
+const PipelinePage = lazy(() => loadPipeline().then((m) => ({ default: m.PipelinePage })));
+const ProductsPage = lazy(() => loadProducts().then((m) => ({ default: m.ProductsPage })));
+const OrdersPage = lazy(() => loadOrders().then((m) => ({ default: m.OrdersPage })));
+const SuppliersPage = lazy(() =>
+  loadSuppliers().then((m) => ({ default: m.SuppliersPage })),
+);
+const SettingsPage = lazy(() => loadSettings().then((m) => ({ default: m.SettingsPage })));
+const ReportsPage = lazy(() => loadReports().then((m) => ({ default: m.ReportsPage })));
+
+/**
+ * Fonctions de préchargement, indexées par chemin de route.
+ *
+ * Le survol d'un lien de navigation déclenche le téléchargement du fichier
+ * correspondant : au moment du clic, il est déjà en cache et l'écran
+ * s'affiche sans attente. Un survol dure généralement quelques centaines
+ * de millisecondes, largement de quoi charger un fichier de quelques
+ * dizaines de kilooctets.
+ */
+export const routePreloaders: Record<string, () => Promise<unknown>> = {
+  '/dashboard': loadDashboard,
+  '/projects': loadProjects,
+  '/employees': loadEmployees,
+  '/teams': loadTeams,
+  '/leave-requests': loadLeaveRequests,
+  '/clients': loadClients,
+  '/pipeline': loadPipeline,
+  '/products': loadProducts,
+  '/orders': loadOrders,
+  '/suppliers': loadSuppliers,
+  '/settings': loadSettings,
+  '/reports': loadReports,
+};
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -29,33 +92,37 @@ export function AppRouter() {
   usePageViewTracking();
 
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    // Suspense affiche cet indicateur pendant le téléchargement d'un écran
+    // différé. Sans lui, React lèverait une erreur au premier chargement.
+    <Suspense fallback={<Spinner label="Chargement de l'écran..." />}>
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-      <Route path="/projects" element={<ProjectsPage />} />
-      <Route path="/projects/:id" element={<ProjectDetailPage />} />
+        <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/projects/:id" element={<ProjectDetailPage />} />
 
-      <Route path="/employees" element={<EmployeesPage />} />
-      <Route path="/teams" element={<TeamsPage />} />
-      <Route path="/leave-requests" element={<LeaveRequestsPage />} />
+        <Route path="/employees" element={<EmployeesPage />} />
+        <Route path="/teams" element={<TeamsPage />} />
+        <Route path="/leave-requests" element={<LeaveRequestsPage />} />
 
-      <Route path="/clients" element={<ClientsPage />} />
-      <Route path="/pipeline" element={<PipelinePage />} />
+        <Route path="/clients" element={<ClientsPage />} />
+        <Route path="/pipeline" element={<PipelinePage />} />
 
-      <Route path="/products" element={<ProductsPage />} />
-      <Route path="/orders" element={<OrdersPage />} />
-      <Route path="/suppliers" element={<SuppliersPage />} />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/suppliers" element={<SuppliersPage />} />
 
-      <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
 
-      {/* Routes absentes du router d'origine : Settings (Étape 2) et Reports/BI (Étape 5) */}
-      <Route path="/settings" element={<SettingsPage />} />
-      <Route path="/reports" element={<ReportsPage />} />
+        {/* Routes absentes du router d'origine : Settings (Étape 2) et Reports/BI (Étape 5) */}
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
 
-      <Route path="*" element={<PlaceholderPage title="Page introuvable" />} />
-    </Routes>
+        <Route path="*" element={<PlaceholderPage title="Page introuvable" />} />
+      </Routes>
+    </Suspense>
   );
 }
