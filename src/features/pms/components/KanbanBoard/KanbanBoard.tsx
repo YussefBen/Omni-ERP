@@ -47,11 +47,11 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
   const tasksQuery = useTasks(projectId, { pageSize: 1000 });
+  const { mutate: updateTask } = useUpdateTask();
   const { mutate: createTask, isPending: isCreating } = useCreateTask();
   const { mutate: deleteTask } = useDeleteTask();
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
-
   const [state, setState] = useState<KanbanState>({ tasks: [] });
 
   // Resync pendant le rendu, pas dans un effet
@@ -77,9 +77,18 @@ export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
   }, [state.tasks]);
 
   function handleDrop(event: DragEvent<HTMLDivElement>, toStatus: TaskStatus) {
+    event.preventDefault();
+    const taskId = Number(event.dataTransfer.getData('text/plain'));
+    if (Number.isNaN(taskId)) return;
+
+    const task = state.tasks.find((t) => t.id === taskId);
+    if (!task || task.status === toStatus) return;
+
+    dispatch({ type: 'MOVE_TASK', taskId, toStatus });
+    updateTask({ id: taskId, status: toStatus });
   }
 
-  function handleAddTask(event: FormEvent<HTMLFormElement>) {   
+  function handleAddTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const title = newTaskTitle.trim();
     if (!title || !projectId) return;
@@ -87,7 +96,7 @@ export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
     setNewTaskTitle('');
   }
 
-  function handleDeleteTask(taskId: number) {                   
+  function handleDeleteTask(taskId: number) {
     if (!window.confirm('Supprimer cette tâche ?')) return;
     deleteTask(taskId);
   }
@@ -127,10 +136,34 @@ export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
                 draggable
                 onDragStart={(event) => event.dataTransfer.setData('text/plain', String(task.id))}
               >
-                <p className={styles.taskTitle}>{task.title}</p>
+                <div className={styles.taskHeader}>
+                  <p className={styles.taskTitle}>{task.title}</p>
+                  <button
+                    type="button"
+                    className={styles.deleteTask}
+                    onClick={() => handleDeleteTask(task.id)}
+                    aria-label={`Supprimer la tâche ${task.title}`}
+                  >
+                    ×
+                  </button>
+                </div>
                 <span className={styles.taskHours}>{task.estimatedHours}h estimées</span>
               </Card>
             ))}
+
+            {column.status === 'a_faire' && projectId && (
+              <form className={styles.addTaskForm} onSubmit={handleAddTask}>
+                <input
+                  type="text"
+                  className={styles.addTaskInput}
+                  placeholder="Nouvelle tâche..."
+                  value={newTaskTitle}
+                  onChange={(event) => setNewTaskTitle(event.target.value)}
+                  disabled={isCreating}
+                  aria-label="Titre de la nouvelle tâche"
+                />
+              </form>
+            )}
           </div>
         </div>
       ))}
