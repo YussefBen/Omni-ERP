@@ -1,0 +1,136 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 1.5rem);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0;
+}
+
+.highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--spacing-md, 1rem);
+}
+
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpiLabel {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #666);
+}
+
+.kpiValue {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.kpiDelta {
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.favorable {
+  color: var(--color-success, #16a34a);
+}
+
+.unfavorable {
+  color: var(--color-danger, #e5484d);
+}
+
+.widgetsRow {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--spacing-md, 1rem);
+  align-items: start;
+}
+
+.alertsCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+}
+
+.alertsTitle {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 0.5rem);
+  font-size: 1rem;
+}
+
+.criticalBadge {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--color-danger-bg, #fdecec);
+  color: var(--color-danger, #e5484d);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.alertsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 0.25rem);
+}
+
+.alertItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 0.5rem);
+  font-size: 0.85rem;
+}
+
+.severityDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.critique {
+  background-color: var(--color-danger, #e5484d);
+}
+
+.faible {
+  background-color: var(--color-warning, #f5a623);
+}
+
+.alertName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alertQuantity {
+  color: var(--color-text-muted, #666);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.empty {
+  color: var(--color-text-muted, #666);
+  font-size: 0.9rem;
+}
+
+.error {
+  color: var(--color-danger, #e5484d);
+}

@@ -1,0 +1,7 @@
+.state {
+  padding: var(--spacing-lg, 1.5rem);
+  border-radius: var(--radius-md, 8px);
+  background-color: var(--color-surface, #fff);
+  color: var(--color-text-muted, #666);
+  text-align: center;
+}

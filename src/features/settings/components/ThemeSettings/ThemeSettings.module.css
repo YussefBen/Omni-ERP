@@ -1,0 +1,46 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+  max-width: 420px;
+}
+
+.title {
+  margin: 0;
+}
+
+.description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #666);
+}
+
+.options {
+  display: flex;
+  gap: var(--spacing-sm, 0.5rem);
+}
+
+.option {
+  flex: 1;
+  padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--color-surface, #fff);
+  color: var(--color-text, #1a1a1a);
+  cursor: pointer;
+}
+
+.option:hover {
+  background-color: var(--color-surface-hover, #f5f5f5);
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--color-accent, #3b82f6);
+  outline-offset: 2px;
+}
+
+.optionActive {
+  border-color: var(--color-accent, #3b82f6);
+  background-color: var(--color-surface-hover, #f5f5f5);
+  font-weight: 600;
+}

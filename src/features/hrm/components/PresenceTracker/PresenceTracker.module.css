@@ -1,0 +1,37 @@
+.card {
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 1rem);
+}
+
+.title {
+  margin: 0;
+}
+
+.times {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--spacing-xs, 0.25rem) var(--spacing-md, 1rem);
+  margin: 0;
+}
+
+.times dt {
+  font-weight: 600;
+  color: var(--color-text-muted, #666);
+}
+
+.times dd {
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-sm, 0.5rem);
+}
+
+.error {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-danger, #e5484d);
+}

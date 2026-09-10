@@ -1,0 +1,22 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: 50%;
+  background-color: var(--color-surface, #fff);
+  color: var(--color-text, #1a1a1a);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.toggle:hover {
+  background-color: var(--color-surface-hover, #f5f5f5);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--color-accent, #3b82f6);
+  outline-offset: 2px;
+}

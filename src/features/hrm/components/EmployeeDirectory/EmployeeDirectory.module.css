@@ -1,0 +1,128 @@
+.layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: var(--spacing-lg, 1.5rem);
+  align-items: start;
+}
+
+.listColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 1rem);
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+  padding: var(--spacing-md, 1rem);
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: var(--radius-md, 8px);
+  background-color: var(--color-surface, #fff);
+}
+
+.searchInput {
+  padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--color-surface, #fff);
+  color: var(--color-text, #1a1a1a);
+}
+
+.checkboxLabel,
+.skillCheckbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 0.25rem);
+  font-size: 0.875rem;
+  color: var(--color-text, #1a1a1a);
+}
+
+.skillFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 0.5rem);
+  padding-top: var(--spacing-xs, 0.25rem);
+  border-top: 1px solid var(--color-border, #e0e0e0);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 0.25rem);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.employeeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 0.5rem);
+  width: 100%;
+  padding: var(--spacing-sm, 0.5rem);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--color-surface, #fff);
+  color: var(--color-text, #1a1a1a);
+  cursor: pointer;
+  text-align: left;
+}
+
+.employeeRow:hover {
+  background-color: var(--color-surface-hover, #f5f5f5);
+}
+
+.employeeRowActive {
+  border-color: var(--color-accent, #3b82f6);
+  background-color: var(--color-surface-hover, #f5f5f5);
+}
+
+.avatarSmall {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.employeeInfo {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.employeeName {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.employeeJob {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #666);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.error {
+  color: var(--color-danger, #e5484d);
+}
+
+.empty {
+  color: var(--color-text-muted, #666);
+  font-size: 0.9rem;
+}
+
+.profileColumn {
+  min-width: 0;
+}
+
+.placeholder {
+  color: var(--color-text-muted, #666);
+  text-align: center;
+}
