@@ -1,6 +1,6 @@
 // Hooks du catalogue produits. Respectent le contrat de forme du socle commun.
 
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions, useQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { DEFAULT_PAGE_SIZE } from '@/shared/config/constants';
 import {
@@ -23,23 +23,34 @@ interface UseProductsResult {
   totalPages: number;
 }
 
+// Taille de page couvrant tout le catalogue : la grille est filtrée et
+// virtualisée côté client. Partagée avec le préchargement de la navigation.
+export const ALL_PRODUCTS = 1000;
+
+// Description unique de la requête « catalogue paginé », partagée par
+// l'écran et par le préchargement au survol de la navigation.
+export function productListOptions(filters: ProductFilters = {}) {
+  const appliedFilters: ProductFilters = {
+    page: filters.page ?? 1,
+    pageSize: filters.pageSize ?? DEFAULT_PAGE_SIZE,
+    category: filters.category,
+    search: filters.search || undefined,
+  };
+
+  return queryOptions({
+    queryKey: erpKeys.productList(appliedFilters),
+    queryFn: () => fetchProducts(appliedFilters),
+  });
+}
+
 // Catalogue paginé. Le terme de recherche est temporisé : la requête
 // n'est émise qu'une fois la saisie stabilisée.
 export function useProducts(filters: ProductFilters = {}): UseProductsResult {
-  const page = filters.page ?? 1;
   const pageSize = filters.pageSize ?? DEFAULT_PAGE_SIZE;
   const debouncedSearch = useDebounce(filters.search ?? '');
 
-  const appliedFilters: ProductFilters = {
-    page,
-    pageSize,
-    category: filters.category,
-    search: debouncedSearch || undefined,
-  };
-
   const query = useQuery({
-    queryKey: erpKeys.productList(appliedFilters),
-    queryFn: () => fetchProducts(appliedFilters),
+    ...productListOptions({ ...filters, search: debouncedSearch }),
     // Conserve la page précédente pendant le chargement de la suivante :
     // évite le clignotement du catalogue à chaque changement de page.
     placeholderData: keepPreviousData,
@@ -91,12 +102,16 @@ interface UseProductCategoriesResult {
 
 // Liste des catégories, pour alimenter le filtre du catalogue.
 // Référentiel figé : inutile de le rafraîchir en cours de session.
-export function useProductCategories(): UseProductCategoriesResult {
-  const query = useQuery({
+export function productCategoriesOptions() {
+  return queryOptions({
     queryKey: erpKeys.productCategories(),
     queryFn: fetchProductCategories,
     staleTime: Infinity,
   });
+}
+
+export function useProductCategories(): UseProductCategoriesResult {
+  const query = useQuery(productCategoriesOptions());
 
   return {
     data: query.data,

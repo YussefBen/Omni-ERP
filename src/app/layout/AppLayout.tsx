@@ -1,9 +1,10 @@
 import { useCallback, useState, type ReactNode } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { ThemeToggle } from '@/shared/components/ThemeToggle/ThemeToggle';
 import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
 import { routePreloaders } from '../../router';
+import { prefetchRouteData } from './prefetchRouteData';
 import styles from './AppLayout.module.css';
 
 interface NavItem {
@@ -61,10 +62,6 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-// Chaque écran déclare les données qu'il consultera en premier. Survoler
-// un lien lance leur chargement, en plus du fichier de l'écran lui-même.
-const DATA_PREFETCHERS: Record<string, () => void> = {};
-
 interface AppLayoutProps {
   children: ReactNode;
 }
@@ -72,7 +69,6 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isOnline = useOnlineStatus();
-  const location = useLocation();
   const queryClient = useQueryClient();
 
   // Précharge le fichier de l'écran survolé, et ses données si elles sont
@@ -81,7 +77,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const preload = useCallback(
     (to: string) => {
       routePreloaders[to]?.();
-      DATA_PREFETCHERS[to]?.();
+      void prefetchRouteData(queryClient, to);
     },
     // queryClient est stable pour toute la durée de vie de l'application.
     [queryClient],
@@ -139,9 +135,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                     className={({ isActive }) =>
                       `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
                     }
-                    // aria-current indique aux lecteurs d'écran quelle page
-                    // est affichée, ce que la couleur seule ne transmet pas.
-                    aria-current={location.pathname === item.to ? 'page' : undefined}
+                    // NavLink pose lui-même aria-current="page" sur le lien
+                    // actif, sous-pages comprises (/clients/12), ce que la
+                    // couleur seule ne transmet pas aux lecteurs d'écran.
                     onMouseEnter={() => preload(item.to)}
                     onFocus={() => preload(item.to)}
                     onClick={closeMenu}
