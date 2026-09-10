@@ -3,7 +3,7 @@ import { Button } from '@/shared/components/Button/Button';
 import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
 import { useProductCategories, useProducts } from '../../hooks/useProducts';
-import { ProductDetail } from '../ProductDetail/ProductDetail';
+import { ProductDetail } from '../ProductDetail/ProductDetail.tsx';
 import type { StockLevel } from '../../types';
 import styles from './ProductCatalog.module.css';
 
