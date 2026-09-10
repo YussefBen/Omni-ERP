@@ -186,9 +186,7 @@ déterminantes pour l'assemblage.
 que soit le domaine :
 
 ```ts
-{
-  (data, isLoading, isError, error, refetch);
-}
+{ data, isLoading, isError, error, refetch }
 ```
 
 L'interface peut ainsi consommer indifféremment n'importe quel domaine, sans apprendre
@@ -222,6 +220,7 @@ dépendance est signalée pour que chacun relance l'installation.
 | Tests             | Vitest, Testing Library, MSW | Interception réseau, tests déterministes     |
 | Sécurité          | DOMPurify                    | Assainissement des saisies                   |
 | Export            | jsPDF                        | Génération côté navigateur                   |
+| Hébergement       | Vercel et Render             | Application statique et API de données       |
 
 Deux choix méritent une justification.
 
@@ -263,11 +262,11 @@ NPS en section 5.1 s'applique : une fonction de hachage déterministe dérive un
 partir de l'identifiant du compte, garantissant qu'un même compte obtient toujours le
 même rôle sans nécessiter de stockage séparé.
 
-| Rôle          | Autorise typiquement                              |
-| ------------- | -------------------------------------------------- |
-| Administrateur | Toutes les actions, y compris la suppression        |
-| Manager        | Validation des demandes, modification des données   |
-| Utilisateur    | Consultation, création de ses propres éléments      |
+| Rôle           | Autorise typiquement                              |
+| -------------- | -------------------------------------------------- |
+| Administrateur | Toutes les actions, y compris la suppression       |
+| Manager        | Validation des demandes, modification des données  |
+| Utilisateur    | Consultation, création de ses propres éléments     |
 
 Deux composants d'ordre supérieur exploitent ce rôle sans dupliquer la logique de
 vérification : `withAuth` redirige vers la connexion si aucune session n'est active,
@@ -304,10 +303,9 @@ return {
 };
 ```
 
-Un projet créé entièrement dans l'application reçoit un identifiant supérieur au nombre
-d'éléments fournis par JSONPlaceholder (100 pour les projets, 200 pour les tâches),
-attribué automatiquement par JSON Server — aucune collision possible sans calcul
-particulier.
+Un projet créé entièrement dans l'application reçoit un identifiant attribué par JSON
+Server. Cette différence de convention entre les deux sources s'est révélée être à
+l'origine d'un défaut décrit en section 5.4.
 
 **Suppression restreinte.** Supprimer un élément d'origine externe est refusé, avec un
 message explicite plutôt qu'un faux succès : au rafraîchissement suivant, JSONPlaceholder
@@ -515,6 +513,11 @@ n'aurait tracé aucun des appels réels de l'application. Chaque échange résea
 soit le domaine qui l'initie, est ainsi chronométré et envoyé à Honeycomb sans qu'aucun
 service n'ait eu à s'en préoccuper individuellement.
 
+**Le coût de l'instrumentation.** Ce module a eu deux effets de bord sur le reste du
+projet, décrits en section 5.5 : l'en-tête de traçage ajouté à chaque requête a été
+refusé par plusieurs API, et l'une des bibliothèques recourt à l'évaluation dynamique de
+chaînes, ce qui a demandé d'assouplir la politique de sécurité du contenu.
+
 ---
 
 # 4. Qualité et tests
@@ -572,6 +575,12 @@ ne vérifie presque rien.
 
 **Les pannes se simulent en une ligne.** Faire répondre un code 500 permet de vérifier
 que l'application dégrade proprement au lieu de planter.
+
+**L'interception protège aussi de l'extérieur.** Les services de supervision ont dû être
+ajoutés aux règles d'interception : sans cela, chaque exécution de la suite de tests
+publiait de vraies alertes dans le canal de discussion de l'équipe et envoyait des
+traces au service de mesure. Un test ne doit rien produire au-delà de son propre
+résultat.
 
 ## 4.4 Ce qui n'est pas testé, et pourquoi
 
@@ -655,10 +664,21 @@ leur portée réelle.
 | Assainissement des saisies | Oui                 | S'exécute là où se trouve la menace : le navigateur |
 | Politique de mots de passe | Oui                 | La validation a lieu avant l'envoi                  |
 | En-têtes de sécurité       | Oui                 | Appliqués par l'hébergeur, hors de portée du client |
-| Secrets hors du dépôt      | Oui                 | Aucune clé dans le code versionné                   |
+| Secrets hors du dépôt      | Partielle           | Protège de la diffusion publique, pas de la lecture |
 | Journal d'audit            | Partielle           | Écrit par le client, donc falsifiable               |
 | Limitation des tentatives  | Non                 | Compteur en mémoire du navigateur, contournable     |
 | Protection CSRF            | Non                 | Aucun serveur ne vérifie le jeton                   |
+
+**Une limite structurelle sur les secrets.** Vite n'expose au navigateur que les
+variables préfixées `VITE_`. Toute clé utilisée par l'application est donc lisible dans
+le code envoyé au client : il suffit d'ouvrir les outils de développement pour la
+retrouver. Cela vaut pour la clé météo, mais aussi pour l'adresse du canal d'alerte et
+la clé du service de traçage.
+
+Les tenir hors du dépôt protège de leur diffusion publique sur la plateforme de
+versionnage, pas de leur lecture par un visiteur du site. C'est une conséquence directe
+de l'absence de serveur : sans intermédiaire pour porter les clés, une application
+front-end ne peut rien cacher.
 
 Cette distinction nous a paru préférable à la présentation d'un dispositif homogène qui
 aurait laissé croire à une protection inexistante.
@@ -685,7 +705,7 @@ Un R² de 0,04 signifie que la tendance est quasi inexistante. L'interface peut 
 afficher « tendance peu marquée, prévision indicative » au lieu de présenter un chiffre
 incertain comme une certitude.
 
-## 5.4 Deux défauts trouvés par les tests
+## 5.4 Trois défauts découverts en cours de projet
 
 **Une dérive d'arrondi.** L'agrégation des achats d'un client arrondissait le total
 après chaque commande plutôt qu'une seule fois à la fin.
@@ -713,7 +733,58 @@ T+61s, tentative → compteur toujours à 3 → rebloqué immédiatement
 Un blocage prévu pour durer une minute devenait définitif. Seul un test simulant
 l'écoulement du temps a permis de le voir.
 
-## 5.5 Difficultés de coordination
+**Une date impossible à calculer.** L'échéance d'un projet est dérivée de son
+identifiant par un calcul modulo, qui suppose un identifiant numérique — ce que fournit
+JSONPlaceholder. Mais un projet créé depuis l'application reçoit un identifiant
+alphanumérique attribué par JSON Server :
+
+```
+seed = "fDx0YJ7-L0o"
+seed % 61                    →  NaN
+new Date(Date.now() + NaN)   →  Invalid Date
+date.toISOString()           →  RangeError: Invalid time value
+```
+
+L'exception remontait jusqu'au tableau de bord, qui n'affichait plus rien du tout. Le
+défaut illustre le fil conducteur du projet : deux sources aux conventions différentes,
+et un code qui suppose la forme de l'une sans la vérifier.
+
+Contrairement aux deux précédents, celui-ci n'a pas été trouvé par les tests. Ceux du
+domaine utilisaient tous des identifiants numériques, comme JSONPlaceholder — le cas
+alphanumérique n'apparaissait qu'après une création réelle dans l'application. Il a
+fallu le déploiement, puis un point d'arrêt sur exception, pour le localiser.
+
+La correction normalise le seed par hachage lorsqu'il s'agit d'une chaîne, selon le même
+principe que le score de satisfaction en 5.1.
+
+## 5.5 Le prix d'une politique de sécurité réellement appliquée
+
+La politique de sécurité du contenu n'est pas un fichier qu'on écrit une fois. Chaque
+service ajouté au projet a demandé de l'étendre, et deux incidents ont marqué la mise en
+production.
+
+**Vingt requêtes bloquées.** Après le premier déploiement, l'application ne chargeait
+aucune donnée métier. La politique n'autorisait que les six API du projet, et les quatre
+services de supervision ajoutés ensuite — suivi d'erreurs, mesure d'audience, indicateurs
+web, traçage — n'y figuraient pas.
+
+**Une bibliothèque qui évalue des chaînes.** L'application ne démarrait pas du tout en
+production, sans message d'erreur exploitable. La cause était un appel à l'évaluation
+dynamique de code, utilisé par l'une des bibliothèques d'instrumentation, que la
+directive `script-src` interdit par défaut. Autoriser `'unsafe-eval'` a résolu le
+blocage, au prix d'une protection réellement affaiblie : c'est précisément cette
+directive qui empêche l'exécution de code injecté sous forme de chaîne.
+
+**Un en-tête refusé par les API.** Le traçage distribué ajoute un en-tête à chaque
+requête sortante, ce qui déclenche une vérification préalable côté navigateur. Plusieurs
+API imposées refusent cet en-tête, ce qui bloquait l'intégralité des appels en
+développement. Le traçage doit être restreint aux points d'accès du projet.
+
+Ces trois incidents partagent la même leçon : une mesure de sécurité qui ne bloque
+jamais rien n'est probablement pas appliquée. Le coût de maintenance est le signe qu'elle
+fonctionne.
+
+## 5.6 Difficultés de coordination
 
 > **[À COMPLÉTER — ensemble]**
 >
@@ -732,12 +803,17 @@ l'écoulement du temps a permis de le voir.
 ## 6.1 Un serveur applicatif
 
 La limite la plus structurante du projet est l'absence de backend. Elle empêche toute
-protection réelle contre le CSRF, toute limitation de débit fiable, et tout journal
-d'audit non falsifiable. Elle prive aussi la version déployée de ses données locales,
-puisque JSON Server ne s'exécute que sur un poste de développement.
+protection réelle contre le CSRF, toute limitation de débit fiable, tout journal d'audit
+non falsifiable, et rend impossible de garder un secret côté application.
 
-L'implémentation actuelle est conçue pour rendre ce déplacement simple : la
-vérification du jeton est isolée dans une fonction unique.
+Le déploiement a contourné une partie du problème en hébergeant l'API de données sur une
+instance distante, ce qui rend l'application pleinement fonctionnelle en ligne. Mais
+cette instance n'est pas un backend pour autant : aucune règle métier, aucune
+authentification, aucune validation ne s'y applique. Elle stocke ce qu'on lui envoie.
+
+L'implémentation actuelle est conçue pour rendre le déplacement simple : la vérification
+du jeton CSRF est isolée dans une fonction unique, et la porter côté serveur ne
+demanderait pas de réécrire le reste.
 
 ## 6.2 Chargement différé des dépendances lourdes
 
@@ -766,7 +842,14 @@ Enregistrer périodiquement l'état du stock permettrait de suivre l'évolution 
 ruptures dans le temps, ce qui est plus utile qu'un décompte instantané, et lèverait la
 limite décrite en 5.3.
 
-## 6.5 Autres pistes
+## 6.5 Normalisation systématique des identifiants
+
+Le défaut décrit en 5.4 vient d'un calcul qui suppose la forme d'un identifiant. Le même
+risque existe partout où deux sources aux conventions différentes alimentent un même
+domaine. Une normalisation appliquée à l'entrée de chaque service, plutôt qu'au cas par
+cas dans les fonctions de calcul, écarterait toute la famille de défauts d'un coup.
+
+## 6.6 Autres pistes
 
 **Segmentation réelle du canary release.** Le tirage à 10 % décrit en 3.8 est simulé
 côté client. Un vrai plan Flagsmith permettrait de cibler par compte ou par région
@@ -793,11 +876,16 @@ ne l'aurait été. Elle a obligé à composer avec des données incomplètes, à
 qui pouvait être dérivé et ce qui devait être stocké, et à documenter ces choix plutôt
 que de les laisser implicites.
 
-L'écriture des tests a modifié notre rapport au code. Les deux défauts découverts
-n'étaient pas des erreurs d'inattention mais des raisonnements incomplets : arrondir
-trop tôt, oublier de réinitialiser un compteur. Formuler ce que le code doit faire,
-avant de vérifier qu'il le fait, impose une précision que la relecture seule n'apporte
-pas.
+L'écriture des tests a modifié notre rapport au code. Les défauts découverts n'étaient
+pas des erreurs d'inattention mais des raisonnements incomplets : arrondir trop tôt,
+oublier de réinitialiser un compteur, supposer la forme d'une donnée. Formuler ce que le
+code doit faire, avant de vérifier qu'il le fait, impose une précision que la relecture
+seule n'apporte pas.
+
+La mise en production a enseigné autre chose encore. Un défaut peut traverser six cents
+tests sans être vu, parce que les tests reproduisent les hypothèses de celui qui les
+écrit. Le déploiement, lui, confronte le code à des conditions qu'on n'avait pas prévues
+— et c'est précisément pour cela qu'il doit intervenir tôt plutôt que la veille du rendu.
 
 Enfin, le travail à trois sur une base commune a montré la valeur des conventions
 posées tôt. Le format unique de retour des hooks, décidé avant la première ligne de
@@ -860,26 +948,26 @@ monde.
 
 ## 8.5 Conformité — Authentification, PMS, HRM
 
-| Exigence                                             | Réalisation                                                             |
-| ------------------------------------------------------ | ------------------------------------------------------------------------ |
-| Service de connexion à Reqres.in                      | `authService.ts` : login, register, fetchUsers, updateUser, deleteUser  |
-| Rôle utilisateur                                      | Dérivé de l'identifiant par hachage déterministe (admin/manager/user)  |
-| Session avec expiration et rafraîchissement           | Jeton simulé de 30 min, renouvelé automatiquement tant que l'utilisateur reste actif |
+| Exigence                                                        | Réalisation                                                                          |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Service de connexion à Reqres.in                                | `authService.ts` : login, register, fetchUsers, updateUser, deleteUser               |
+| Rôle utilisateur                                                | Dérivé de l'identifiant par hachage déterministe (admin/manager/user)                |
+| Session avec expiration et rafraîchissement                     | Jeton simulé de 30 min, renouvelé tant que l'utilisateur reste actif                 |
 | Persistance de session, connexion automatique après inscription | Magasin Zustand persistant ; `useRegister` ouvre la session sans écran intermédiaire |
-| Protection des routes et des actions                  | `ProtectedRoute`, `withAuth`, `withPermissions`                        |
-| Limitation des tentatives de connexion                 | 3 échecs, blocage d'une minute (limite décrite en 5.2)                 |
-| Service RandomUser + Reqres pour les employés          | `hrmService.ts`, fusion par position                                    |
-| Congés et présence sur JSON Server                     | `useLeaveRequests`, `usePresence`, cycle demande → validation           |
-| Recherche et filtres employés                          | `useEmployees(filters)` : nom, compétences, disponibilité               |
-| Analyse des écarts de compétences                      | `getSkillGapAnalysis`                                                   |
-| Solde de congés                                        | Calculé à la lecture depuis les demandes validées                       |
-| Service JSONPlaceholder + JSON Server pour les projets  | `pmsService.ts`, surcharge locale jointe aux données externes           |
-| Types Project, Task, Comment                            | Livrés, avec `estimatedHours` sur les tâches                            |
-| Pagination sur projets et tâches                        | `useProjects(filters)`, `useTasks(projectId)`                          |
-| Commentaires sur projets et tâches                       | `useComments(target)`, avec modification et suppression                |
-| Calcul de la progression d'un projet                     | `getProjectProgress`, fonction pure réutilisée dans le service et les KPI |
-| Mutations avec mise à jour optimiste                     | Sur toutes les modifications, projets et tâches                        |
-| Préférences de compte                                    | `useSettings` : nom affiché, langue, persistées localement              |
+| Protection des routes et des actions                            | `ProtectedRoute`, `withAuth`, `withPermissions`                                      |
+| Limitation des tentatives de connexion                          | 3 échecs, blocage d'une minute (limite décrite en 5.2)                               |
+| Service RandomUser + Reqres pour les employés                   | `hrmService.ts`, fusion par position                                                 |
+| Congés et présence sur JSON Server                              | `useLeaveRequests`, `usePresence`, cycle demande → validation                        |
+| Recherche et filtres employés                                   | `useEmployees(filters)` : nom, compétences, disponibilité                            |
+| Analyse des écarts de compétences                               | `getSkillGapAnalysis`                                                                |
+| Solde de congés                                                 | Calculé à la lecture depuis les demandes validées                                    |
+| Service JSONPlaceholder + JSON Server pour les projets          | `pmsService.ts`, surcharge locale jointe aux données externes                        |
+| Types Project, Task, Comment                                    | Livrés, avec `estimatedHours` sur les tâches                                         |
+| Pagination sur projets et tâches                                | `useProjects(filters)`, `useTasks(projectId)`                                        |
+| Commentaires sur projets et tâches                              | `useComments(target)`, avec modification et suppression                              |
+| Calcul de la progression d'un projet                            | `getProjectProgress`, fonction pure réutilisée dans le service et les KPI            |
+| Mutations avec mise à jour optimiste                            | Sur toutes les modifications, projets et tâches                                      |
+| Préférences de compte                                           | `useSettings` : nom affiché, langue, persistées localement                           |
 
 ## 8.6 Conformité — Interface
 
@@ -891,5 +979,10 @@ monde.
 | --------------------- | ---------------------------------------------------------- |
 | Dépôt                 | github.com/YussefBen/Omni-ERP                              |
 | Démonstration         | https://omni-erp-nine.vercel.app                           |
+| API de données        | https://omni-erp-api.onrender.com                          |
 | Documentation d'API   | https://documenter.getpostman.com/view/48786203/2sBYAvwr1q |
 | Politique de sécurité | `docs/SECURITY.md`                                         |
+
+L'instance hébergeant l'API de données relève d'une offre gratuite : elle se met en
+veille après quinze minutes d'inactivité, et la première requête suivante peut prendre
+une cinquantaine de secondes.
