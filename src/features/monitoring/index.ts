@@ -10,5 +10,6 @@ export { useFeatureFlag } from './hooks/useFeatureFlag';
 export { useCanaryFeature } from './hooks/useCanaryFeature';
 export { sendSlackAlert } from './services/slackAlertService';
 export { initTracing } from './services/tracingService';
+export { SupervisionWidget } from './components/SupervisionWidget/SupervisionWidget';
 
 export type * from './types';

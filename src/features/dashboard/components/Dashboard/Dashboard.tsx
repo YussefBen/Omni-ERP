@@ -5,6 +5,7 @@ import { useDashboardData } from '../../hooks/useDashboardData';
 import { NotificationsWidget } from '../NotificationsWidget/NotificationsWidget.tsx';
 import { WeatherWidget } from '../WeatherWidget/WeatherWidget.tsx';
 import styles from './Dashboard.module.css';
+import { SupervisionWidget } from '@/features/monitoring';
 
 function formatKpiValue(kpi: Kpi): string {
   const rounded = Math.round(kpi.value * 100) / 100;
@@ -68,6 +69,7 @@ export function Dashboard() {
 
       <div className={styles.widgetsRow}>
         <WeatherWidget />
+        <SupervisionWidget />
 
         <Card className={styles.alertsCard}>
           <h2 className={styles.alertsTitle}>
