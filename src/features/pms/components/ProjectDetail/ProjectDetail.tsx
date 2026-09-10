@@ -32,7 +32,7 @@ function RawDeleteProjectButton({ onDelete, isDeleting }: DeleteProjectButtonPro
   );
 }
 
-const DeleteProjectButton = withPermissions(RawDeleteProjectButton, ['admin']);
+const DeleteProjectButton = withPermissions(RawDeleteProjectButton, ['admin', 'manager']);
 
 interface ProjectDetailProps {
   projectId: number;
