@@ -1,7 +1,7 @@
-import { useMemo, useState, type DragEvent } from 'react';
+import { useMemo, useState, type DragEvent, type FormEvent } from 'react';
 import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
-import { useUpdateTask } from '../../hooks/useTaskMutations';
+import { useCreateTask, useDeleteTask, useUpdateTask } from '../../hooks/useTaskMutations';
 import { useTasks } from '../../hooks/useTasks';
 import type { Task, TaskStatus } from '../../types';
 import styles from './KanbanBoard.module.css';
@@ -47,7 +47,10 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
   const tasksQuery = useTasks(projectId, { pageSize: 1000 });
-  const { mutate: updateTask } = useUpdateTask();
+  const { mutate: createTask, isPending: isCreating } = useCreateTask();
+  const { mutate: deleteTask } = useDeleteTask();
+
+  const [newTaskTitle, setNewTaskTitle] = useState('');
 
   const [state, setState] = useState<KanbanState>({ tasks: [] });
 
@@ -74,15 +77,19 @@ export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
   }, [state.tasks]);
 
   function handleDrop(event: DragEvent<HTMLDivElement>, toStatus: TaskStatus) {
+  }
+
+  function handleAddTask(event: FormEvent<HTMLFormElement>) {   
     event.preventDefault();
-    const taskId = Number(event.dataTransfer.getData('text/plain'));
-    if (Number.isNaN(taskId)) return;
+    const title = newTaskTitle.trim();
+    if (!title || !projectId) return;
+    createTask({ projectId, title });
+    setNewTaskTitle('');
+  }
 
-    const task = state.tasks.find((t) => t.id === taskId);
-    if (!task || task.status === toStatus) return;
-
-    dispatch({ type: 'MOVE_TASK', taskId, toStatus });
-    updateTask({ id: taskId, status: toStatus });
+  function handleDeleteTask(taskId: number) {                   
+    if (!window.confirm('Supprimer cette tâche ?')) return;
+    deleteTask(taskId);
   }
 
   if (tasksQuery.isLoading) return <Spinner label="Chargement du tableau..." />;
