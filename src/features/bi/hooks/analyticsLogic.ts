@@ -78,7 +78,35 @@ export function getSalesByCategory(orders: Order[], products: Product[]): Catego
       value: Math.round(value * 100) / 100,
       share: grandTotal > 0 ? Math.round((value / grandTotal) * 1000) / 10 : 0,
     }))
-    .sort((a, b) => b.value - a.value);
+        .sort((a, b) => b.value - a.value);
+}
+
+// Libellé de la part qui regroupe les petites catégories dans les graphiques.
+export const OTHER_CATEGORY_LABEL = 'Autres';
+
+// Regroupe les catégories sous le seuil (en %) dans une part « Autres »,
+// placée en dernier. Réservé à l'affichage : un camembert reste lisible
+// avec six ou sept parts, pas avec vingt-quatre. Les exports CSV et PDF
+// gardent le détail complet de getSalesByCategory.
+// Une seule petite catégorie n'est pas regroupée : la renommer « Autres »
+// ferait perdre une information sans rien gagner en lisibilité.
+export function groupSmallShares(shares: CategoryShare[], threshold = 3): CategoryShare[] {
+  const kept = shares.filter((entry) => entry.share >= threshold);
+  const small = shares.filter((entry) => entry.share < threshold);
+
+  if (small.length < 2) return shares;
+
+  const value = small.reduce((sum, entry) => sum + entry.value, 0);
+  const share = small.reduce((sum, entry) => sum + entry.share, 0);
+
+  return [
+    ...kept,
+    {
+      category: OTHER_CATEGORY_LABEL,
+      value: Math.round(value * 100) / 100,
+      share: Math.round(share * 10) / 10,
+    },
+  ];
 }
 
 // Prolonge la série par une droite de tendance. Le coefficient de
