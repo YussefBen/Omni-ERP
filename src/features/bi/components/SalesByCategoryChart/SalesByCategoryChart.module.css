@@ -1,0 +1,18 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+}
+
+.title {
+  margin: 0;
+}
+
+.empty {
+  color: var(--color-text-muted, #666);
+  font-size: 0.9rem;
+}
+
+.error {
+  color: var(--color-danger, #e5484d);
+}
