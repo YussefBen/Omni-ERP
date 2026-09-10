@@ -136,9 +136,9 @@ export function AppRouter() {
 
                 <Route path="*" element={<PlaceholderPage title="Page introuvable" />} />
               </Routes>
-              </ProtectedRoute>
             </Suspense>
           </AppLayout>
+          </ProtectedRoute>
         }
       />
     </Routes>
