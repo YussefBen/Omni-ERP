@@ -1,0 +1,79 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+  min-width: 220px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sectionTitle {
+  margin: 0.5rem 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted, #666);
+}
+
+.serviceList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.serviceItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.serviceName {
+  flex: 1;
+}
+
+.serviceStatus {
+  color: var(--color-text-muted, #666);
+  font-size: 0.75rem;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.statusDot.ok {
+  background: var(--color-success, #2ea043);
+}
+
+.statusDot.degraded {
+  background: var(--color-warning, #d29922);
+}
+
+.statusDot.down {
+  background: var(--color-danger, #e5484d);
+}
+
+.vitalsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #666);
+}
+
+.info {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #666);
+}

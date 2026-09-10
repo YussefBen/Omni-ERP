@@ -3,9 +3,10 @@ import { NavLink } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { ThemeToggle } from '@/shared/components/ThemeToggle/ThemeToggle';
 import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
-import { routePreloaders } from '../../router';
 import { prefetchRouteData } from './prefetchRouteData';
 import styles from './AppLayout.module.css';
+import { routePreloaders } from '../../routePreloaders';
+import { UserMenu } from '@/shared/components/UserMenu/UserMenu';
 
 interface NavItem {
   to: string;
@@ -116,6 +117,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             </span>
           )}
           <ThemeToggle />
+          <UserMenu />
         </div>
       </header>
 
