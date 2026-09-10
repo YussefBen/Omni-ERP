@@ -9,7 +9,7 @@ Projet réalisé en équipe de trois dans le cadre de la formation.
 
 **Démo en ligne** : https://omni-erp-nine.vercel.app
 
-Les données locales — pipeline, fournisseurs, stocks, commandes — ne sont pas disponibles sur la version déployée : elles proviennent de JSON Server, qui s'exécute sur le poste de développement. La démonstration complète nécessite un lancement local.
+L'application déployée est pleinement fonctionnelle. Les données métier sont servies par une instance JSON Server hébergée sur Render. Cette instance étant gratuite, elle se met en veille après quinze minutes d'inactivité : la première requête peut alors prendre une cinquantaine de secondes.
 
 ---
 
