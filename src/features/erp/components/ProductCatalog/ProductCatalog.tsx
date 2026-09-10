@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { List, type RowComponentProps } from 'react-window';
 import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
-import { useProductCategories, useProducts } from '../../hooks/useProducts';
+import { ALL_PRODUCTS, useProductCategories, useProducts } from '../../hooks/useProducts';
 import { ProductDetail } from '../ProductDetail/ProductDetail.tsx';
 import type { Product, StockLevel } from '../../types';
 import styles from './ProductCatalog.module.css';
@@ -18,13 +18,6 @@ const STOCK_LABELS: Record<StockLevel, string> = {
 // visibles sans avoir à les mesurer une par une.
 const MIN_CARD_WIDTH = 190;
 const ROW_HEIGHT = 250;
-
-// Le catalogue complet est chargé en une fois plutôt que page par page :
-// la virtualisation ne rend que les rangées visibles, le coût d'affichage
-// ne dépend donc plus du nombre de produits. Les filtres par marque et
-// par prix deviennent au passage globaux, alors qu'ils ne portaient que
-// sur la page affichée.
-const ALL_PRODUCTS = 1000;
 
 /**
  * Nombre de cartes par rangée, recalculé quand la fenêtre change de taille.

@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ThemeToggle } from '@/shared/components/ThemeToggle/ThemeToggle';
 import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
 import { routePreloaders } from '../../router';
+import { prefetchRouteData } from './prefetchRouteData';
 import styles from './AppLayout.module.css';
 
 interface NavItem {
@@ -61,10 +62,6 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-// Chaque écran déclare les données qu'il consultera en premier. Survoler
-// un lien lance leur chargement, en plus du fichier de l'écran lui-même.
-const DATA_PREFETCHERS: Record<string, () => void> = {};
-
 interface AppLayoutProps {
   children: ReactNode;
 }
@@ -80,7 +77,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const preload = useCallback(
     (to: string) => {
       routePreloaders[to]?.();
-      DATA_PREFETCHERS[to]?.();
+      void prefetchRouteData(queryClient, to);
     },
     // queryClient est stable pour toute la durée de vie de l'application.
     [queryClient],

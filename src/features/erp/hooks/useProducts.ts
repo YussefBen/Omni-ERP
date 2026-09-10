@@ -23,6 +23,10 @@ interface UseProductsResult {
   totalPages: number;
 }
 
+// Taille de page couvrant tout le catalogue : la grille est filtrée et
+// virtualisée côté client. Partagée avec le préchargement de la navigation.
+export const ALL_PRODUCTS = 1000;
+
 // Description unique de la requête « catalogue paginé », partagée par
 // l'écran et par le préchargement au survol de la navigation.
 export function productListOptions(filters: ProductFilters = {}) {

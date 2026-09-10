@@ -31,8 +31,11 @@ interface UseClientsResult {
   totalPages: number;
 }
 
-// Description unique de la requête « liste des clients ». L'écran et le
-// préchargement au survol de la navigation passent tous deux par ici :
+// Taille de page couvrant tout le référentiel : la liste est filtrée et
+// virtualisée côté client. Partagée avec le préchargement de la navigation.
+export const ALL_CLIENTS = 1000;
+
+// Description unique de la requête « liste des clients ». L'écran et le// préchargement au survol de la navigation passent tous deux par ici :
 // ils produisent donc forcément la même clé de cache.
 export function clientListOptions(filters: ClientFilters = {}) {
   const appliedFilters: ClientFilters = {

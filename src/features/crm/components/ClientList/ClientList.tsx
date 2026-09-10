@@ -2,7 +2,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { List, type RowComponentProps } from 'react-window';
 import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
-import { useClients } from '../../hooks/useClients';
+import { ALL_CLIENTS, useClients } from '../../hooks/useClients';
 import { ClientProfile } from '../ClientProfile/ClientProfile';
 import type { Client, ClientStatus } from '../../types';
 import styles from './ClientList.module.css';
@@ -19,11 +19,6 @@ const STATUS_LABELS: Record<ClientStatus, string> = {
 // Elle doit correspondre à la hauteur réelle définie en CSS.
 const ROW_HEIGHT = 64;
 
-// Le catalogue complet est chargé en une fois plutôt que page par page :
-// la virtualisation ne rend que les lignes visibles, le coût d'affichage
-// est donc le même pour 12 ou 208 clients. Le filtre par statut devient
-// au passage global, alors qu'il ne portait que sur la page affichée.
-const ALL_CLIENTS = 1000;
 
 interface RowData {
   clients: Client[];
