@@ -1,0 +1,11 @@
+.toast {
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: white;
+  box-shadow: var(--shadow);
+}
+.success { background: #10b981; }
+.error { background: #ef4444; }
+.info { background: #3b82f6; }

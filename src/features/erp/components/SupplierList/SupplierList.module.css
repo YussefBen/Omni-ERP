@@ -1,0 +1,106 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-md, 1rem);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 0.25rem);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-sm, 0.5rem);
+}
+
+.name {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.rating {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #666);
+  white-space: nowrap;
+}
+
+.contact {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #666);
+}
+
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: var(--spacing-xs, 0.25rem) 0;
+}
+
+.categoryBadge {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--color-info-bg, #e6f0ff);
+  color: var(--color-info, #3b82f6);
+  font-size: 0.7rem;
+}
+
+.productCount {
+  margin: 0 0 var(--spacing-xs, 0.25rem);
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #666);
+}
+
+.evalForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 0.25rem);
+  padding-top: var(--spacing-xs, 0.25rem);
+  border-top: 1px solid var(--color-border, #e0e0e0);
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.scoreInput,
+.commentInput {
+  padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--color-surface, #fff);
+  color: var(--color-text, #1a1a1a);
+  font-family: inherit;
+}
+
+.scoreInput {
+  width: 70px;
+}
+
+.commentInput {
+  resize: vertical;
+}
+
+.evalActions {
+  display: flex;
+  gap: var(--spacing-xs, 0.25rem);
+}
+
+.error {
+  color: var(--color-danger, #e5484d);
+}
+
+.empty {
+  color: var(--color-text-muted, #666);
+  font-size: 0.9rem;
+}

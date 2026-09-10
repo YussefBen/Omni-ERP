@@ -1,0 +1,71 @@
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md, 1rem);
+  align-items: start;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+  padding: var(--spacing-sm, 0.5rem);
+  border-radius: var(--radius-md, 8px);
+  background-color: var(--color-surface-hover, #f5f5f5);
+  min-height: 200px;
+}
+
+.columnTitle {
+  margin: 0;
+  padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 0.25rem);
+}
+
+.columnCount {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-muted, #666);
+}
+
+.columnBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+  min-height: 120px;
+}
+
+.taskCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: grab;
+}
+
+.taskCard:active {
+  cursor: grabbing;
+}
+
+.taskTitle {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.taskHours {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #666);
+}
+
+.emptyColumn {
+  margin: 0;
+  padding: var(--spacing-md, 1rem);
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #666);
+}
+
+.error {
+  color: var(--color-danger, #e5484d);
+}

@@ -1,0 +1,31 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.content {
+  position: relative;
+  background: var(--bg);
+  border-radius: 1rem;
+  padding: 1.8rem;
+  min-width: 320px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+}
+.title { margin-bottom: 1rem; color: var(--text-h); }
+.closeButton {
+  position: absolute;
+  top: 0.8rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: var(--text);
+}
