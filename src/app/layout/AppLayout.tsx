@@ -6,6 +6,7 @@ import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
 import { prefetchRouteData } from './prefetchRouteData';
 import styles from './AppLayout.module.css';
 import { routePreloaders } from '../../routePreloaders';
+import { UserMenu } from '@/shared/components/UserMenu/UserMenu';
 
 interface NavItem {
   to: string;
@@ -116,6 +117,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             </span>
           )}
           <ThemeToggle />
+          <UserMenu />
         </div>
       </header>
 
