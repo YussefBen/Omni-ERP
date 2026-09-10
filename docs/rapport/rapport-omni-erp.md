@@ -236,27 +236,121 @@ signifié réécrire ce mécanisme à la main.
 
 ## 3.2 Authentification et permissions
 
-> **[À COMPLÉTER — Jessica]**
->
-> Points à couvrir :
->
-> - Pourquoi Reqres et comment la session est maintenue
-> - Le rôle utilisateur dérivé de l'identifiant, et pourquoi de façon déterministe
-> - Les trois rôles et ce qu'ils autorisent
-> - Les composants d'ordre supérieur `withAuth` et `withPermissions`
-> - La protection des routes
+L'authentification s'appuie sur Reqres.in, seule source imposée à fournir des comptes
+utilisateurs. L'API ne renvoie qu'un jeton à la connexion, jamais le profil complet : le
+service recherche donc l'adresse courriel dans la liste des comptes (deux pages, six
+comptes chacune) pour reconstituer une identité exploitable.
+
+```ts
+async function findUserByEmail(email: string) {
+  const [page1, page2] = await Promise.all([
+    reqresApi.get("/users", { params: { page: 1 } }),
+    reqresApi.get("/users", { params: { page: 2 } }),
+  ]);
+  return [...page1.data.data, ...page2.data.data].find(
+    (u) => u.email.toLowerCase() === email.toLowerCase(),
+  );
+}
+```
+
+**La session.** Un jeton d'expiration simulé est posé à 30 minutes, stocké dans un
+magasin Zustand persistant. Un contrôle périodique le renouvelle automatiquement tant
+que l'utilisateur reste actif, et déconnecte silencieusement au-delà — Reqres n'exposant
+aucune notion d'expiration réelle, ce mécanisme est entièrement recréé côté client.
+
+**Le rôle utilisateur.** Reqres n'a pas de notion de rôle. La même logique que pour le
+NPS en section 5.1 s'applique : une fonction de hachage déterministe dérive un rôle à
+partir de l'identifiant du compte, garantissant qu'un même compte obtient toujours le
+même rôle sans nécessiter de stockage séparé.
+
+| Rôle          | Autorise typiquement                              |
+| ------------- | -------------------------------------------------- |
+| Administrateur | Toutes les actions, y compris la suppression        |
+| Manager        | Validation des demandes, modification des données   |
+| Utilisateur    | Consultation, création de ses propres éléments      |
+
+Deux composants d'ordre supérieur exploitent ce rôle sans dupliquer la logique de
+vérification : `withAuth` redirige vers la connexion si aucune session n'est active,
+`withPermissions` masque un composant entier si le rôle courant ne figure pas dans la
+liste autorisée.
+
+```tsx
+export const DeleteButton = withPermissions(RawDeleteButton, ["admin"]);
+```
+
+`ProtectedRoute` répond au même besoin au niveau du routeur plutôt que du composant, pour
+les cas où l'on protège un ensemble d'écrans plutôt qu'un élément isolé.
+
+Trois tentatives de connexion échouées déclenchent un blocage d'une minute, entièrement
+côté client — un compteur en mémoire du navigateur, sans garantie contre un appel direct
+à l'API en dehors de l'interface. Cette limite est la même que celle décrite pour le
+rate limiting en section 5.2, et le défaut découvert sur son expiration est détaillé en
+section 5.4.
 
 ## 3.3 Gestion de projets et ressources humaines
 
-> **[À COMPLÉTER — Jessica]**
->
-> Points à couvrir :
->
-> - La jointure entre JSONPlaceholder et les surcharges locales
-> - Les mutations optimistes sur les projets et les tâches
-> - L'analyse des écarts de compétences
-> - Le calcul des soldes de congés
-> - Pourquoi la suppression est restreinte sur les éléments d'origine externe
+**Une source externe qui n'écrit jamais réellement.** JSONPlaceholder fournit les
+projets et les tâches, mais n'enregistre aucune écriture malgré des réponses qui
+paraissent correctes. Toute modification est donc dirigée vers JSON Server sous forme
+de surcharge, identifiée par le même identifiant que l'élément d'origine, et jointe à la
+lecture :
+
+```ts
+const override = overrideMap.get(post.id);
+return {
+  id: post.id,
+  title: override?.title ?? post.title,
+  status: override?.status ?? deriveProjectStatus(post.id),
+};
+```
+
+Un projet créé entièrement dans l'application reçoit un identifiant supérieur au nombre
+d'éléments fournis par JSONPlaceholder (100 pour les projets, 200 pour les tâches),
+attribué automatiquement par JSON Server — aucune collision possible sans calcul
+particulier.
+
+**Suppression restreinte.** Supprimer un élément d'origine externe est refusé, avec un
+message explicite plutôt qu'un faux succès : au rafraîchissement suivant, JSONPlaceholder
+n'ayant jamais vraiment supprimé quoi que ce soit, l'élément serait réapparu. Seuls les
+éléments créés dans l'application peuvent être réellement supprimés.
+
+**Mutations optimistes.** Le déplacement d'une tâche sur le tableau applique le même
+motif que celui détaillé en section 3.4 pour le pipeline de vente — annulation des
+requêtes en vol, sauvegarde, modification immédiate, retour arrière en cas d'échec. Seules
+les modifications en bénéficient : une création optimiste demanderait de réconcilier un
+identifiant temporaire avec celui fourni par le serveur, pour un gain limité sur une
+action ponctuelle.
+
+**Ressources humaines.** La fiche d'un employé fusionne deux sources indépendantes par
+position dans leurs listes respectives : Reqres pour l'identité du compte, RandomUser
+pour des coordonnées réalistes. Département, équipe et compétences n'existant dans
+aucune des deux, ils sont dérivés de l'identifiant selon le même principe déterministe
+qu'en authentification.
+
+L'analyse des écarts de compétences compare une liste de compétences requises à celles
+disponibles dans l'équipe :
+
+```ts
+function getSkillGapAnalysis(required: string[], employees: Employee[]) {
+  return required.map((skill) => ({
+    skill,
+    availableCount: employees.filter((e) => e.skills.includes(skill)).length,
+  }));
+}
+```
+
+Le solde de congés se calcule à la lecture plutôt que d'être stocké, à partir des
+demandes déjà validées :
+
+```ts
+const usedDays = requests
+  .filter((r) => r.status === "approved")
+  .reduce((total, r) => total + countLeaveDays(r.startDate, r.endDate), 0);
+const remainingDays = ANNUAL_LEAVE_DAYS - usedDays;
+```
+
+Ce calcul à la volée évite qu'un solde stocké ne diverge du détail des demandes qui le
+composent — le même principe que la note fournisseur en annexe 8.2.
 
 ## 3.4 Relation client et pipeline de vente
 
@@ -370,14 +464,56 @@ valeurs divergentes pour le même indicateur.
 
 ## 3.8 Supervision et mesure
 
-> **[À COMPLÉTER — Jessica]**
->
-> Points à couvrir :
->
-> - Suivi des erreurs, Web Vitals, analyse d'audience
-> - Feature flags et canary release, avec ce qui est réel et ce qui est simulé
-> - Intégration continue Lighthouse
-> - Alertes automatiques et traçage distribué
+Bonus complémentaire aux quatre domaines métier, ce module répond à une question
+distincte : une fois l'application en service, comment savoir qu'elle fonctionne
+correctement, et être averti rapidement si ce n'est pas le cas.
+
+**Suivi des erreurs.** Toute exception non gérée, ainsi que les mutations React Query en
+échec, sont envoyées à Sentry avec le contexte de l'utilisateur connecté (identifiant et
+rôle, jamais ses données personnelles). L'`ErrorBoundary` partagé, déjà prévu par
+Rafael, expose exactement le point d'extension nécessaire.
+
+**Web Vitals.** Les cinq métriques standard du secteur (CLS, INP, LCP, FCP, TTFB) sont
+mesurées en continu via le paquet officiel `web-vitals`, plutôt qu'une mesure de
+performance maison moins comparable à un référentiel connu.
+
+**Analyse d'audience.** Google Analytics 4 enregistre automatiquement chaque changement
+de route. Le suivi des événements métier (création d'un projet, ajout d'une tâche) reste
+à la charge de chaque domaine, seul responsable de savoir quand un événement significatif
+survient.
+
+**Feature flags et canary release — ce qui est réel, ce qui est simulé.** Flagsmith
+gère l'activation ou la désactivation d'une fonctionnalité par environnement, ce qui est
+une fonctionnalité réelle du service. Le tirage des 10 % d'utilisateurs qui voient une
+nouveauté en premier, en revanche, est simulé côté client plutôt que géré par un vrai
+segment Flagsmith, dont la segmentation avancée relève de leur offre payante :
+
+```ts
+const bucket = Math.floor(Math.random() * 100); // tiré une seule fois, conservé localement
+const isInCanaryGroup = bucket < 10;
+```
+
+Le tirage n'a lieu qu'une fois par navigateur, sinon un même utilisateur changerait de
+groupe à chaque rafraîchissement — ce qui viderait le principe même d'un déploiement
+progressif.
+
+**Intégration continue.** Un contrôle Lighthouse s'exécute automatiquement à chaque envoi
+sur `dev` via GitHub Actions, plutôt qu'une vérification manuelle ponctuelle. Un seul
+passage est effectué par exécution pour garder le pipeline rapide, au prix d'une légère
+variabilité du score d'un envoi à l'autre.
+
+**Alertes automatiques.** Une panne détectée sur l'un des six services externes, ou une
+erreur critique de rendu, déclenche un message Slack. L'envoi utilise le mode `no-cors`
+du navigateur, Slack ne renvoyant pas d'en-têtes autorisant une lecture normale de sa
+réponse depuis un site tiers : le message part bien, mais le code ne peut pas confirmer
+sa réception. Une seule alerte est émise par début de panne, pour éviter un message par
+minute tant qu'un service reste indisponible.
+
+**Traçage distribué.** OpenTelemetry instrumente `XMLHttpRequest` plutôt que `fetch` : en
+navigateur, Axios repose en interne sur `XMLHttpRequest`, et instrumenter `fetch`
+n'aurait tracé aucun des appels réels de l'application. Chaque échange réseau, quel que
+soit le domaine qui l'initie, est ainsi chronométré et envoyé à Honeycomb sans qu'aucun
+service n'ait eu à s'en préoccuper individuellement.
 
 ---
 
@@ -632,9 +768,18 @@ limite décrite en 5.3.
 
 ## 6.5 Autres pistes
 
-> **[À COMPLÉTER — Jessica et Rafael]**
+**Segmentation réelle du canary release.** Le tirage à 10 % décrit en 3.8 est simulé
+côté client. Un vrai plan Flagsmith permettrait de cibler par compte ou par région
+plutôt que par un tirage aléatoire local, et de piloter la bascule vers 50 % puis 100 %
+depuis leur interface plutôt qu'en modifiant le code.
+
+**Historique des demandes de congés.** Le solde se recalcule à la lecture à partir des
+demandes validées, ce qui est fiable mais ne conserve aucune trace d'un solde antérieur
+à une date donnée — utile pour un futur export de bilan social par exemple.
+
+> **[À COMPLÉTER — Rafael]**
 >
-> Deux ou trois axes propres à vos domaines.
+> Deux ou trois axes propres à votre domaine.
 
 ---
 
@@ -715,7 +860,26 @@ monde.
 
 ## 8.5 Conformité — Authentification, PMS, HRM
 
-> **[À COMPLÉTER — Jessica]**
+| Exigence                                             | Réalisation                                                             |
+| ------------------------------------------------------ | ------------------------------------------------------------------------ |
+| Service de connexion à Reqres.in                      | `authService.ts` : login, register, fetchUsers, updateUser, deleteUser  |
+| Rôle utilisateur                                      | Dérivé de l'identifiant par hachage déterministe (admin/manager/user)  |
+| Session avec expiration et rafraîchissement           | Jeton simulé de 30 min, renouvelé automatiquement tant que l'utilisateur reste actif |
+| Persistance de session, connexion automatique après inscription | Magasin Zustand persistant ; `useRegister` ouvre la session sans écran intermédiaire |
+| Protection des routes et des actions                  | `ProtectedRoute`, `withAuth`, `withPermissions`                        |
+| Limitation des tentatives de connexion                 | 3 échecs, blocage d'une minute (limite décrite en 5.2)                 |
+| Service RandomUser + Reqres pour les employés          | `hrmService.ts`, fusion par position                                    |
+| Congés et présence sur JSON Server                     | `useLeaveRequests`, `usePresence`, cycle demande → validation           |
+| Recherche et filtres employés                          | `useEmployees(filters)` : nom, compétences, disponibilité               |
+| Analyse des écarts de compétences                      | `getSkillGapAnalysis`                                                   |
+| Solde de congés                                        | Calculé à la lecture depuis les demandes validées                       |
+| Service JSONPlaceholder + JSON Server pour les projets  | `pmsService.ts`, surcharge locale jointe aux données externes           |
+| Types Project, Task, Comment                            | Livrés, avec `estimatedHours` sur les tâches                            |
+| Pagination sur projets et tâches                        | `useProjects(filters)`, `useTasks(projectId)`                          |
+| Commentaires sur projets et tâches                       | `useComments(target)`, avec modification et suppression                |
+| Calcul de la progression d'un projet                     | `getProjectProgress`, fonction pure réutilisée dans le service et les KPI |
+| Mutations avec mise à jour optimiste                     | Sur toutes les modifications, projets et tâches                        |
+| Préférences de compte                                    | `useSettings` : nom affiché, langue, persistées localement              |
 
 ## 8.6 Conformité — Interface
 
