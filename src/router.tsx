@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { usePageViewTracking } from '@/features/monitoring';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
+import { AppLayout } from './app/layout/AppLayout';
 
 // Les deux écrans d'authentification restent chargés avec l'application :
 // ce sont les premiers affichés, les différer ajouterait une attente
@@ -92,37 +93,51 @@ export function AppRouter() {
   usePageViewTracking();
 
   return (
-    // Suspense affiche cet indicateur pendant le téléchargement d'un écran
-    // différé. Sans lui, React lèverait une erreur au premier chargement.
-    <Suspense fallback={<Spinner label="Chargement de l'écran..." />}>
-      <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+      {/* Tous les écrans métier partagent la mise en page. Ceux
+          d'authentification s'affichent seuls, sans menu : on ne propose
+          pas de naviguer à quelqu'un qui n'est pas encore connecté. */}
+      <Route
+        path="*"
+        element={
+          <AppLayout>
+            {/* Suspense placé à l'intérieur de la mise en page : seule la
+                zone de contenu affiche l'indicateur pendant le
+                téléchargement, le menu reste en place. */}
+            <Suspense fallback={<Spinner label="Chargement de l'écran..." />}>
+              <Routes>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        <Route path="/projects" element={<ProjectsPage />} />
-        <Route path="/projects/:id" element={<ProjectDetailPage />} />
+                <Route path="/projects" element={<ProjectsPage />} />
+                <Route path="/projects/:id" element={<ProjectDetailPage />} />
 
-        <Route path="/employees" element={<EmployeesPage />} />
-        <Route path="/teams" element={<TeamsPage />} />
-        <Route path="/leave-requests" element={<LeaveRequestsPage />} />
+                <Route path="/employees" element={<EmployeesPage />} />
+                <Route path="/teams" element={<TeamsPage />} />
+                <Route path="/leave-requests" element={<LeaveRequestsPage />} />
 
-        <Route path="/clients" element={<ClientsPage />} />
-        <Route path="/pipeline" element={<PipelinePage />} />
+                <Route path="/clients" element={<ClientsPage />} />
+                <Route path="/pipeline" element={<PipelinePage />} />
 
-        <Route path="/products" element={<ProductsPage />} />
-        <Route path="/orders" element={<OrdersPage />} />
-        <Route path="/suppliers" element={<SuppliersPage />} />
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/orders" element={<OrdersPage />} />
+                <Route path="/suppliers" element={<SuppliersPage />} />
 
-        <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
 
-        {/* Routes absentes du router d'origine : Settings (Étape 2) et Reports/BI (Étape 5) */}
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
+                {/* Routes absentes du router d'origine : Settings (Étape 2)
+                    et Reports/BI (Étape 5) */}
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/reports" element={<ReportsPage />} />
 
-        <Route path="*" element={<PlaceholderPage title="Page introuvable" />} />
-      </Routes>
-    </Suspense>
+                <Route path="*" element={<PlaceholderPage title="Page introuvable" />} />
+              </Routes>
+            </Suspense>
+          </AppLayout>
+        }
+      />
+    </Routes>
   );
 }

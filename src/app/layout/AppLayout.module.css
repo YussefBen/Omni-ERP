@@ -1,0 +1,207 @@
+/* Les variables de thème du projet : --bg, --text, --text-h, --border,
+   --accent, --accent-bg, --accent-border. Elles basculent automatiquement
+   entre clair et sombre, aucune couleur n'est écrite en dur ici. */
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'topbar topbar'
+    'sidebar content';
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Lien d'évitement : masqué hors du flux visuel, mais atteignable au
+   clavier. Il évite de parcourir les treize entrées du menu à chaque
+   changement de page. */
+.skipLink {
+  position: absolute;
+  top: -100px;
+  left: 0.5rem;
+  z-index: 2000;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: top 0.15s ease;
+}
+
+.skipLink:focus {
+  top: 0.5rem;
+}
+
+/* ---------- Barre supérieure ---------- */
+
+.topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text-h);
+}
+
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.offlineBadge {
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background: #b3261e;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.menuButton {
+  display: none;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: none;
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+/* ---------- Barre latérale ---------- */
+
+.sidebar {
+  grid-area: sidebar;
+  overflow-y: auto;
+  padding: 1rem 0.5rem;
+  border-right: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.navGroup + .navGroup {
+  margin-top: 1rem;
+}
+
+.navGroupTitle {
+  margin: 0 0 0.25rem;
+  padding: 0 0.5rem;
+  color: var(--text);
+  opacity: 0.7;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.navList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  display: block;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.navLink:hover {
+  background: var(--accent-bg);
+  color: var(--text-h);
+}
+
+/* Contour de focus explicite : la navigation au clavier doit rester
+   visible, y compris sur les navigateurs qui masquent le contour natif. */
+.navLink:focus-visible,
+.menuButton:focus-visible,
+.skipLink:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* L'entrée active se distingue par la couleur, le fond et un trait latéral
+   — jamais par la couleur seule, illisible pour une personne daltonienne. */
+.navLinkActive {
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+/* ---------- Contenu ---------- */
+
+.content {
+  grid-area: content;
+  padding: 1rem;
+  overflow-x: auto;
+  background: var(--bg);
+}
+
+.content:focus {
+  outline: none;
+}
+
+.overlay {
+  display: none;
+}
+
+/* ---------- Petits écrans ---------- */
+
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'topbar'
+      'content';
+  }
+
+  .menuButton {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1100;
+    width: 240px;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+
+  .overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgb(0 0 0 / 40%);
+  }
+}
+
+/* Respecte le réglage système de réduction des animations. */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .skipLink {
+    transition: none;
+  }
+}

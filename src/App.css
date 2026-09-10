@@ -1,5 +1,3 @@
-#root {
-  min-height: 100vh;
-  background: var(--bg);
-  color: var(--text);
-}
+/* Les fondations de l'application sont dans index.css.
+   Ce fichier reste disponible pour d'éventuelles règles globales
+   propres au composant racine. */
