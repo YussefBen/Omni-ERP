@@ -12,6 +12,10 @@ function formatMs(value: number | null): string {
   return value === null ? '—' : `${Math.round(value)} ms`;
 }
 
+function formatCls(value: number | null): string {
+  return value === null ? '—' : value.toFixed(3);
+}
+
 export function SupervisionWidget() {
   const { data: services, isLoading } = useHealthChecks();
   const vitals = useWebVitals();
@@ -46,7 +50,7 @@ export function SupervisionWidget() {
       <section>
         <h3 className={styles.sectionTitle}>Performance ressentie</h3>
         <div className={styles.vitalsGrid}>
-          <span>CLS {vitals.cls ?? '—'}</span>
+          <span>CLS {formatCls(vitals.cls)}</span>
           <span>INP {formatMs(vitals.inp)}</span>
           <span>LCP {formatMs(vitals.lcp)}</span>
           <span>FCP {formatMs(vitals.fcp)}</span>
