@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Button } from '@/shared/components/Button/Button';
 import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
@@ -15,6 +15,76 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
   annulee: 'Annulée',
 };
 
+// Nombre de lignes détaillées avant regroupement, pour garder des cartes
+// de hauteur comparable quel que soit le nombre d'articles.
+const VISIBLE_LINES = 3;
+
+interface OrderCardProps {
+  order: Order;
+  isUpdating: boolean;
+  onTransition: (order: Order, nextStatus: OrderStatus) => void;
+}
+
+/**
+ * Carte d'une commande.
+ *
+ * memo évite de rerendre toutes les commandes affichées quand une seule
+ * change de statut. La fonction de transition est stabilisée par
+ * useCallback côté parent : sans cela, une nouvelle référence à chaque
+ * rendu suffirait à invalider la mémorisation.
+ */
+const OrderCard = memo(function OrderCard({ order, isUpdating, onTransition }: OrderCardProps) {
+  const allowedTransitions = getAllowedOrderTransitions(order.status);
+  const hasDiscount = order.discountedAmount < order.totalAmount;
+
+  return (
+    <Card className={styles.orderCard}>
+      <div className={styles.orderHeader}>
+        <span className={styles.orderId}>Commande #{order.id}</span>
+        <span className={`${styles.statusBadge} ${styles[order.status]}`}>
+          {STATUS_LABELS[order.status]}
+        </span>
+      </div>
+
+      <p className={styles.orderMeta}>
+        {order.itemCount} article(s) — {order.totalAmount.toFixed(2)} €
+        {hasDiscount && <> (remisé : {order.discountedAmount.toFixed(2)} €)</>}
+      </p>
+
+      <ul className={styles.linesList}>
+        {order.lines.slice(0, VISIBLE_LINES).map((line) => (
+          <li key={line.productId} className={styles.line}>
+            <img src={line.thumbnail} alt="" className={styles.lineThumb} loading="lazy" />
+            <span>
+              {line.title} × {line.quantity}
+            </span>
+          </li>
+        ))}
+        {order.lines.length > VISIBLE_LINES && (
+          <li className={styles.lineMore}>
+            +{order.lines.length - VISIBLE_LINES} autre(s) article(s)
+          </li>
+        )}
+      </ul>
+
+      {allowedTransitions.length > 0 && (
+        <div className={styles.transitions}>
+          {allowedTransitions.map((nextStatus) => (
+            <Button
+              key={nextStatus}
+              variant={nextStatus === 'annulee' ? 'danger' : 'primary'}
+              disabled={isUpdating}
+              onClick={() => onTransition(order, nextStatus)}
+            >
+              {STATUS_LABELS[nextStatus]}
+            </Button>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+});
+
 export function OrderList() {
   const [status, setStatus] = useState<OrderStatus | ''>('');
   const [page, setPage] = useState(1);
@@ -26,11 +96,18 @@ export function OrderList() {
 
   const { mutate: updateStatus, isPending: isUpdating } = useUpdateOrderStatus();
 
-  // On passe l'objet order complet : useUpdateOrderStatus s'en sert (côté client, jamais
-  // envoyé à l'API) pour générer les mouvements de stock correspondants après succès.
-  function handleTransition(order: Order, nextStatus: OrderStatus) {
-    updateStatus({ orderId: order.id, status: nextStatus, order });
-  }
+  // Référence stable : sans useCallback, une nouvelle fonction serait
+  // créée à chaque rendu et memo sur les cartes n'aurait aucun effet.
+  //
+  // On passe l'objet order complet : useUpdateOrderStatus s'en sert (côté
+  // client, jamais envoyé à l'API) pour générer les mouvements de stock
+  // correspondants après succès.
+  const handleTransition = useCallback(
+    (order: Order, nextStatus: OrderStatus) => {
+      updateStatus({ orderId: order.id, status: nextStatus, order });
+    },
+    [updateStatus],
+  );
 
   return (
     <div className={styles.container}>
@@ -67,56 +144,14 @@ export function OrderList() {
             {data?.items.length === 0 && (
               <p className={styles.empty}>Aucune commande ne correspond à ces critères.</p>
             )}
-            {data?.items.map((order) => {
-              const allowedTransitions = getAllowedOrderTransitions(order.status);
-              return (
-                <Card key={order.id} className={styles.orderCard}>
-                  <div className={styles.orderHeader}>
-                    <span className={styles.orderId}>Commande #{order.id}</span>
-                    <span className={`${styles.statusBadge} ${styles[order.status]}`}>
-                      {STATUS_LABELS[order.status]}
-                    </span>
-                  </div>
-                  <p className={styles.orderMeta}>
-                    {order.itemCount} article(s) — {order.totalAmount.toFixed(2)} €
-                    {order.discountedAmount < order.totalAmount && (
-                      <> (remisé : {order.discountedAmount.toFixed(2)} €)</>
-                    )}
-                  </p>
-
-                  <ul className={styles.linesList}>
-                    {order.lines.slice(0, 3).map((line) => (
-                      <li key={line.productId} className={styles.line}>
-                        <img src={line.thumbnail} alt="" className={styles.lineThumb} />
-                        <span>
-                          {line.title} × {line.quantity}
-                        </span>
-                      </li>
-                    ))}
-                    {order.lines.length > 3 && (
-                      <li className={styles.lineMore}>
-                        +{order.lines.length - 3} autre(s) article(s)
-                      </li>
-                    )}
-                  </ul>
-
-                  {allowedTransitions.length > 0 && (
-                    <div className={styles.transitions}>
-                      {allowedTransitions.map((nextStatus) => (
-                        <Button
-                          key={nextStatus}
-                          variant={nextStatus === 'annulee' ? 'danger' : 'primary'}
-                          disabled={isUpdating}
-                          onClick={() => handleTransition(order, nextStatus)}
-                        >
-                          {STATUS_LABELS[nextStatus]}
-                        </Button>
-                      ))}
-                    </div>
-                  )}
-                </Card>
-              );
-            })}
+            {data?.items.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                isUpdating={isUpdating}
+                onTransition={handleTransition}
+              />
+            ))}
           </div>
 
           {totalPages > 1 && (

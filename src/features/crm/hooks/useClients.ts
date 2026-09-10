@@ -1,7 +1,13 @@
 // Hooks de lecture et de qualification des clients CRM.
 // Respectent le contrat de forme du socle commun.
 
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { DEFAULT_PAGE_SIZE } from '@/shared/config/constants';
 import { fetchClientById, fetchClients, updateClientStatus } from '../services/crmService';
@@ -25,22 +31,33 @@ interface UseClientsResult {
   totalPages: number;
 }
 
+// Taille de page couvrant tout le référentiel : la liste est filtrée et
+// virtualisée côté client. Partagée avec le préchargement de la navigation.
+export const ALL_CLIENTS = 1000;
+
+// Description unique de la requête « liste des clients ». L'écran et le// préchargement au survol de la navigation passent tous deux par ici :
+// ils produisent donc forcément la même clé de cache.
+export function clientListOptions(filters: ClientFilters = {}) {
+  const appliedFilters: ClientFilters = {
+    page: filters.page ?? 1,
+    pageSize: filters.pageSize ?? DEFAULT_PAGE_SIZE,
+    search: filters.search || undefined,
+  };
+
+  return queryOptions({
+    queryKey: crmKeys.clientList(appliedFilters),
+    queryFn: () => fetchClients(appliedFilters),
+  });
+}
+
 // Liste paginée des clients. Le terme de recherche est temporisé :
 // la requête n'est émise qu'une fois la saisie stabilisée.
 export function useClients(filters: ClientFilters = {}): UseClientsResult {
-  const page = filters.page ?? 1;
   const pageSize = filters.pageSize ?? DEFAULT_PAGE_SIZE;
   const debouncedSearch = useDebounce(filters.search ?? '');
 
-  const appliedFilters: ClientFilters = {
-    page,
-    pageSize,
-    search: debouncedSearch || undefined,
-  };
-
   const query = useQuery({
-    queryKey: crmKeys.clientList(appliedFilters),
-    queryFn: () => fetchClients(appliedFilters),
+    ...clientListOptions({ ...filters, search: debouncedSearch }),
     // Conserve la page précédente pendant le chargement de la suivante :
     // évite le clignotement de la liste à chaque changement de page.
     placeholderData: keepPreviousData,

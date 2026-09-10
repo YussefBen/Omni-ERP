@@ -17,10 +17,10 @@ Chaque directive autorise le strict nécessaire.
 | Directive | Valeur | Raison |
 |---|---|---|
 | `default-src` | `'self'` | Tout est refusé par défaut, chaque exception est explicite |
-| `script-src` | `'self'` | Aucun script inline ni CDN : un script injecté ne s'exécute pas |
+| `script-src` | `'self' 'unsafe-eval'` + Vercel, GTM | Voir la limite ci-dessous |
 | `style-src` | `'self' 'unsafe-inline'` | Les CSS Modules génèrent des styles inline |
 | `img-src` | `'self' data:` + CDN des API | Vignettes produits et icônes météo |
-| `connect-src` | `'self'` + les 6 API | Seules ces origines peuvent être appelées en XHR |
+| `connect-src` | `'self'` + les 6 API + les services de supervision | Seules ces origines peuvent être appelées en XHR |
 | `object-src` | `'none'` | Aucun plugin, vecteur d'attaque obsolète |
 | `frame-ancestors` | `'none'` | L'application ne peut pas être placée dans une iframe |
 | `base-uri` | `'self'` | Empêche la réécriture de l'URL de base des ressources |
@@ -33,6 +33,18 @@ ligne de défense derrière la sanitisation.
 **Ce que ça ne protège pas.** `'unsafe-inline'` sur `style-src` laisse passer
 l'injection de styles, ce qui permet certaines attaques par superposition
 visuelle. La supprimer demanderait d'abandonner les CSS Modules.
+
+`'unsafe-eval'` sur `script-src` constitue une concession plus lourde : elle
+rétablit l'évaluation de chaînes en JavaScript, précisément ce que la directive
+sert à interdire. Elle a été ajoutée parce que les bibliothèques de supervision
+y recourent pour instrumenter le code, et que l'application ne démarrait pas
+sans elle. Le compromis est explicite : sans supervision, la directive pourrait
+revenir à `'self'` seul.
+
+La directive s'est également révélée coûteuse à maintenir. Chaque service ajouté
+au projet — suivi d'erreurs, mesure d'audience, indicateurs, traçage — a demandé
+d'étendre `connect-src` et parfois `script-src`. C'est le prix d'une protection
+réellement appliquée plutôt que déclarative.
 
 ### Autres en-têtes
 
@@ -159,6 +171,21 @@ identifiants nationaux, qui ne transitent donc jamais jusqu'à l'application.
 
 ---
 
+### Une limite structurelle
+
+Vite n'expose au navigateur que les variables préfixées `VITE_`. Toute clé
+utilisée par l'application est donc lisible dans le code envoyé au client :
+il suffit d'ouvrir les outils de développement pour la retrouver.
+
+Cela vaut pour la clé météo, mais aussi pour l'adresse du canal d'alerte et
+la clé du service de traçage. Aucune de ces valeurs n'est réellement secrète
+en production.
+
+C'est une conséquence directe de l'absence de serveur : sans intermédiaire
+pour porter les clés, une application front-end ne peut rien cacher. Les
+placer hors du dépôt protège de leur diffusion publique sur GitHub, pas de
+leur lecture par un visiteur du site.
+
 ## Synthèse
 
 | Mesure | Protection réelle | Démonstration |
@@ -166,7 +193,7 @@ identifiants nationaux, qui ne transitent donc jamais jusqu'à l'application.
 | En-têtes de sécurité | Oui | — |
 | Sanitisation XSS | Oui | — |
 | Politique de mots de passe | Oui | — |
-| Gestion des secrets | Oui | — |
+| Gestion des secrets | Partielle | — |
 | Journal d'audit | Partielle | — |
 | Limitation des tentatives | Non | Oui |
 | Protection CSRF | Non | Oui |
