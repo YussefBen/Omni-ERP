@@ -1,6 +1,4 @@
 // Donne l'utilisateur connecté, et gère le rafraîchissement auto de la session
-// (pas un hook "data fetching" classique, donc pas la forme du socle)
-
 import { useEffect, useState } from 'react';
 import type { Role } from '@/shared/types';
 import { useAuthStore } from '../store/authStore';
