@@ -1,8 +1,9 @@
-import { useMemo, useState, type DragEvent } from 'react';
+import { useMemo, useState, type DragEvent, type FormEvent } from 'react';
 import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
-import { useUpdateTask } from '../../hooks/useTaskMutations';
+import { useCreateTask, useDeleteTask, useUpdateTask } from '../../hooks/useTaskMutations';
 import { useTasks } from '../../hooks/useTasks';
+import { useEventTracking } from '@/features/monitoring';
 import type { Task, TaskStatus } from '../../types';
 import styles from './KanbanBoard.module.css';
 
@@ -48,7 +49,11 @@ interface KanbanBoardProps {
 export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
   const tasksQuery = useTasks(projectId, { pageSize: 1000 });
   const { mutate: updateTask } = useUpdateTask();
+  const { mutate: createTask, isPending: isCreating } = useCreateTask();
+  const { mutate: deleteTask } = useDeleteTask();
+  const { trackEvent } = useEventTracking();
 
+  const [newTaskTitle, setNewTaskTitle] = useState('');
   const [state, setState] = useState<KanbanState>({ tasks: [] });
 
   // Resync pendant le rendu, pas dans un effet
@@ -83,6 +88,20 @@ export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
 
     dispatch({ type: 'MOVE_TASK', taskId, toStatus });
     updateTask({ id: taskId, status: toStatus });
+  }
+
+  function handleAddTask(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const title = newTaskTitle.trim();
+    if (!title || !projectId) return;
+    createTask({ projectId, title });
+    trackEvent('task_created', { projectId });
+    setNewTaskTitle('');
+  }
+
+  function handleDeleteTask(taskId: number) {
+    if (!window.confirm('Supprimer cette tâche ?')) return;
+    deleteTask(taskId);
   }
 
   if (tasksQuery.isLoading) return <Spinner label="Chargement du tableau..." />;
@@ -120,10 +139,34 @@ export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
                 draggable
                 onDragStart={(event) => event.dataTransfer.setData('text/plain', String(task.id))}
               >
-                <p className={styles.taskTitle}>{task.title}</p>
+                <div className={styles.taskHeader}>
+                  <p className={styles.taskTitle}>{task.title}</p>
+                  <button
+                    type="button"
+                    className={styles.deleteTask}
+                    onClick={() => handleDeleteTask(task.id)}
+                    aria-label={`Supprimer la tâche ${task.title}`}
+                  >
+                    ×
+                  </button>
+                </div>
                 <span className={styles.taskHours}>{task.estimatedHours}h estimées</span>
               </Card>
             ))}
+
+            {column.status === 'a_faire' && projectId && (
+              <form className={styles.addTaskForm} onSubmit={handleAddTask}>
+                <input
+                  type="text"
+                  className={styles.addTaskInput}
+                  placeholder="Nouvelle tâche..."
+                  value={newTaskTitle}
+                  onChange={(event) => setNewTaskTitle(event.target.value)}
+                  disabled={isCreating}
+                  aria-label="Titre de la nouvelle tâche"
+                />
+              </form>
+            )}
           </div>
         </div>
       ))}
