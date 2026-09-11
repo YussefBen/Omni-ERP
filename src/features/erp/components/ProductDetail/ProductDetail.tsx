@@ -3,6 +3,7 @@ import { Spinner } from '@/shared/components/Spinner/Spinner';
 import { Tooltip } from '@/shared/components/Tooltip/Tooltip';
 import { useProduct } from '../../hooks/useProducts';
 import { getSuppliersForProduct, useSuppliers } from '../../hooks/useSuppliers';
+import { StockMovementPanel } from '../StockMovementPanel/StockMovementPanel';
 import type { StockLevel } from '../../types';
 import styles from './ProductDetail.module.css';
 
@@ -80,6 +81,7 @@ export function ProductDetail({ productId }: ProductDetailProps) {
           </ul>
         </div>
       )}
+      <StockMovementPanel productId={product.id} />
     </Card>
   );
 }
