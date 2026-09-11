@@ -15,17 +15,43 @@ L'application déployée est pleinement fonctionnelle. Les données métier sont
 
 ## Sommaire
 
+- [Fonctionnalités](#fonctionnalités)
 - [Démarrage rapide](#démarrage-rapide)
 - [Stack technique](#stack-technique)
 - [Architecture](#architecture)
 - [Sources de données](#sources-de-données)
+- [Documentation d'API](#documentation-dapi)
 - [Commandes disponibles](#commandes-disponibles)
 - [Tests](#tests)
+- [Storybook](#storybook)
+- [Performance](#performance)
 - [Choix techniques](#choix-techniques)
 - [Sécurité](#sécurité)
 - [Supervision](#supervision)
 - [Conventions d'équipe](#conventions-déquipe)
 - [Répartition du travail](#répartition-du-travail)
+
+---
+
+## Fonctionnalités
+
+L'application distingue trois rôles : **administrateur**, **gestionnaire** et
+**utilisateur**. Certaines actions sont réservées aux deux premiers, comme la validation
+des congés, la suppression d'un projet ou la consultation du journal d'audit. Un
+sélecteur de rôle, dans le menu utilisateur, permet de vérifier les droits de chaque
+profil sans changer de compte.
+
+| Module | Fonctionnalités principales |
+|---|---|
+| Authentification | Connexion et inscription, session de trente minutes prolongée automatiquement, routes protégées par rôle, blocage après trois échecs |
+| Tableau de bord | Un indicateur clé par domaine, alertes de stock, météo et prévisions à cinq jours, notifications, état de disponibilité des API externes |
+| Gestion de projets | Liste et détail des projets, tableau Kanban des tâches avec création et suppression, commentaires, suppression d'un projet réservée aux gestionnaires |
+| Ressources humaines | Administration des employés, équipes avec analyse des écarts de compétences, demandes de congés, création et validation par un gestionnaire, solde de congés, calendrier, présence |
+| Relation client | Clients avec recherche, fiche détaillée et historique d'achats, qualification du statut, résumé de satisfaction (NPS), pipeline de vente avec création, modification et déplacement des opportunités |
+| Ressources d'entreprise | Catalogue produits avec filtres, fiche produit avec taux de rotation et mouvements de stock manuels, commandes avec détail et circuit de statuts, stock mis à jour automatiquement, fournisseurs et leurs évaluations, alertes de réapprovisionnement |
+| Intelligence d'affaires | Vingt indicateurs comparés à la période précédente, graphiques d'évolution et de répartition, prévision à trois mois, exports PDF et CSV |
+| Paramètres | Préférences du compte, thème clair et sombre |
+| Sécurité | Journal d'audit consultable par les administrateurs, connexions journalisées |
 
 ---
 
@@ -95,6 +121,8 @@ npm run dev      # application sur le port 5173
 | Listes longues | react-window | Virtualisation |
 | Événements | RxJS | Motif Observateur pour le pipeline et les notifications |
 | Tests | Vitest, Testing Library, MSW | Interception réseau, tests déterministes |
+| Tests de bout en bout | Playwright | Parcours complets dans un vrai navigateur |
+| Catalogue de composants | Storybook | Composants isolés, états et props documentés |
 | Sécurité | DOMPurify | Assainissement des saisies |
 | Export | jsPDF | Génération de rapports côté navigateur |
 
@@ -108,6 +136,9 @@ types, et expose un point d'entrée unique.
 
 ```
 src/
+├── app/
+│   ├── layout/        navigation principale, préchargement au survol
+│   └── pages/         un écran par route
 ├── features/
 │   ├── auth/          authentification, rôles, protection des routes
 │   ├── dashboard/     écran d'accueil, météo, notifications
@@ -174,16 +205,6 @@ Six sources alimentent l'application.
 | OpenWeatherMap | Météo et prévisions | Tableau de bord |
 | JSON Server | Données métier persistées | Tous |
 
-## Documentation d'API
-
-La collection Postman couvre les 61 endpoints des six sources de données, avec descriptions et exemples de réponse.
-
-Consultation en ligne : https://documenter.getpostman.com/view/48786203/2sBYAvwr1q
-
-Import local : `docs/api/OMNI-ERP.postman_collection.json`
-
-Les requêtes vers JSON Server nécessitent que l'API locale soit démarrée avec `npm run server`.
-
 ### Contournements documentés
 
 Trois données nécessaires au métier ne sont fournies par aucune API. Elles sont dérivées
@@ -198,6 +219,18 @@ que les indicateurs restent stables d'un rafraîchissement à l'autre.
 
 ---
 
+## Documentation d'API
+
+La collection Postman couvre les 61 endpoints des six sources de données, avec descriptions et exemples de réponse.
+
+Consultation en ligne : https://documenter.getpostman.com/view/48786203/2sBYAvwr1q
+
+Import local : `docs/api/OMNI-ERP.postman_collection.json`
+
+Les requêtes vers JSON Server nécessitent que l'API locale soit démarrée avec `npm run server`.
+
+---
+
 ## Commandes disponibles
 
 | Commande | Effet |
@@ -209,6 +242,9 @@ que les indicateurs restent stables d'un rafraîchissement à l'autre.
 | `npm run lint` | Analyse statique du code |
 | `npm run test` | Lance les tests en surveillance |
 | `npm run coverage` | Lance les tests et produit le rapport de couverture |
+| `npm run test:e2e` | Lance les tests de bout en bout (Playwright) |
+| `npm run storybook` | Ouvre le catalogue de composants sur le port 6006 |
+| `npm run build-storybook` | Construit la version statique du catalogue |
 | `npm run lighthouse` | Mesure performance, accessibilité et référencement |
 
 Avant chaque envoi sur le dépôt :
@@ -221,7 +257,8 @@ npx tsc -b && npm run build && npx vitest run
 
 ## Tests
 
-625 tests répartis sur 55 fichiers, pour une couverture globale de 85 %.
+643 tests unitaires et d'intégration répartis sur 58 fichiers, pour une couverture
+globale de 85 %.
 
 Les appels réseau sont interceptés par MSW : les tests ne dépendent ni d'une connexion,
 ni de la disponibilité des API, et peuvent affirmer des valeurs exactes.
@@ -231,6 +268,16 @@ npm run coverage
 ```
 
 Le rapport détaillé est produit dans `coverage/index.html`.
+
+### Tests de bout en bout
+
+Des parcours complets sont vérifiés dans un vrai navigateur avec Playwright. Lors de la
+première utilisation, installez les navigateurs de test :
+
+```bash
+npx playwright install
+npm run test:e2e
+```
 
 ### Couverture par domaine
 
@@ -259,6 +306,62 @@ nôtre.
 Deux défauts réels ont été identifiés par les tests, tous deux invisibles depuis
 l'interface : une dérive d'arrondi sur les montants clients, et un blocage de connexion
 qui devenait permanent au lieu de durer une minute.
+
+---
+
+## Storybook
+
+Catalogue des 15 composants partagés. Chaque composant dispose d'une page de
+documentation générée à partir de son code — description, props et types — et de
+stories couvrant ses différents états : variantes, chargement, erreur, désactivé.
+
+```bash
+npm run storybook
+```
+
+Puis ouvrir http://localhost:6006.
+
+Une bascule clair/sombre, dans la barre d'outils, affiche chaque composant dans les deux
+thèmes de l'application. La story **SafeHtml → Contenu malveillant** montre
+l'assainissement en action : scripts, gestionnaires d'événements et liens `javascript:`
+sont retirés avant l'affichage.
+
+---
+
+## Performance
+
+### Optimisations
+
+| Optimisation | Effet |
+|---|---|
+| Chargement différé des routes | Chaque écran est téléchargé à la première visite, pas au démarrage de l'application |
+| Préchargement au survol | Survoler un lien de navigation télécharge l'écran et ses données : au clic, l'affichage est immédiat |
+| Virtualisation des listes | Clients et catalogue produits ne montent que les lignes visibles, quel que soit le volume |
+| Mémorisation des lignes | Les lignes de liste ne se redessinent que lorsque leurs données changent |
+| Calculs mémorisés | Les filtrages ne se refont que si la liste ou le filtre changent |
+| Statut de connexion | `useSyncExternalStore` pour s'abonner à l'état en ligne du navigateur sans état intermédiaire |
+| Positionnement des bulles d'aide | `useLayoutEffect` pour calculer la position avant l'affichage, sans scintillement |
+
+Le préchargement des données utilise les mêmes descriptions de requêtes que les écrans,
+grâce aux fabriques `queryOptions` de React Query : l'écran et le préchargement
+produisent forcément la même clé de cache. Des tests vérifient cette correspondance.
+
+### Mesures avec le Profiler de React
+
+Les optimisations ont été mesurées en comparant la version actuelle à celle qui les
+précède, sur les mêmes manipulations.
+
+| Mesure | Avant | Après |
+|---|---|---|
+| Clients consultables sans changer de page | 10 par page, sur 21 pages | 208 dans une seule liste |
+| Lignes réellement présentes dans la page | 10 | une dizaine, selon la hauteur de l'écran |
+| Rendus d'une ligne pendant une recherche | à chaque rendu de la liste | un seul, sur six rendus de la liste |
+| Requêtes au clic après survol d'un lien | toutes celles de l'écran | aucune |
+
+À 208 clients, le gain en temps de rendu reste de l'ordre de la milliseconde : il se situe
+sous la précision du navigateur, qui arrondit ses mesures à la milliseconde. Le bénéfice
+tient à la forme de la courbe : le coût d'affichage ne dépend plus du nombre de clients
+mais de la hauteur de l'écran, et ne grandira pas avec la base.
 
 ---
 
@@ -293,6 +396,13 @@ Chaque indicateur porte sa valeur courante, celle de la période précédente de
 baisse est favorable — ruptures de stock, retards, annulations — pour que l'interface
 n'ait pas à reconstituer la règle métier.
 
+### Graphiques lisibles, exports complets
+
+Le graphique de répartition des ventes regroupe les catégories de moins de 3 % dans une
+part « Autres » : un camembert reste lisible avec six parts, pas avec vingt-quatre. Les
+exports CSV et PDF conservent en revanche le détail de toutes les catégories, parce
+qu'un export sert à analyser, pas à lire d'un coup d'œil.
+
 ### Limites assumées
 
 Deux indicateurs n'ont pas de valeur passée : il n'existe pas de photographie historique
@@ -302,6 +412,12 @@ documentées dans le code plutôt que masquées par une comparaison fabriquée.
 La prévision de chiffre d'affaires expose son coefficient de détermination, ce qui permet
 à l'écran de signaler une tendance peu marquée au lieu de présenter un chiffre incertain
 comme une certitude.
+
+**Commandes et stock sans transaction.** Le changement de statut d'une commande et les
+mouvements de stock qu'il génère sont enregistrés par des requêtes successives. JSON
+Server ne gérant pas les transactions, un échec entre les deux laisserait la commande
+mise à jour sans son mouvement de stock. Sur un serveur applicatif, ces opérations
+seraient regroupées dans une transaction unique : soit tout est enregistré, soit rien.
 
 **Suppression restreinte sur les projets et tâches d'origine JSONPlaceholder.** Les 100
 premiers projets et les 200 premières tâches viennent de JSONPlaceholder, une API en
@@ -328,13 +444,19 @@ En résumé :
 | Assainissement des saisies | Protection réelle |
 | Politique de mots de passe | Protection réelle |
 | Gestion des secrets hors du dépôt | Protection réelle |
+| Filtrage des données sensibles des API | Protection réelle |
 | Journal d'audit | Partielle |
 | Limitation des tentatives de connexion | Démonstration du motif |
 | Protection CSRF | Démonstration du motif |
 
-Les trois dernières supposent un serveur applicatif qui décide. Le projet n'en ayant pas,
-elles sont implémentées de bout en bout mais leur garantie reste théorique. Cette
-distinction est explicite plutôt que présentée comme un dispositif homogène.
+Les réponses brutes de DummyJSON contiennent des mots de passe, des numéros de carte
+bancaire et des identifiants nationaux. Les appels restreignent explicitement les champs
+demandés : ces données ne transitent jamais jusqu'à l'application.
+
+Les trois dernières mesures du tableau supposent un serveur applicatif qui décide. Le
+projet n'en ayant pas, elles sont implémentées de bout en bout mais leur garantie reste
+théorique. Cette distinction est explicite plutôt que présentée comme un dispositif
+homogène.
 
 ---
 
@@ -419,12 +541,3 @@ l'installation.
 | Jessica | Authentification, gestion de projets, ressources humaines, paramètres, supervision |
 | Youssef | Relation client, ressources d'entreprise, intelligence d'affaires, tableau de bord, sécurité |
 | Rafael | Interface complète, composants partagés, accessibilité, performance |
-
-
-## Storybook
-
-Catalogue des 15 composants partagés, avec leurs états, leurs props et une bascule clair/sombre dans la barre d'outils.
-
-    npm run storybook
-
-Puis ouvrir http://localhost:6006.
