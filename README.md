@@ -9,6 +9,8 @@ Projet réalisé en équipe de trois dans le cadre de la formation.
 
 **Démo en ligne** : https://omni-erp-nine.vercel.app
 
+**Compte de démonstration** : `eve.holt@reqres.in` / `pistol`
+
 L'application déployée est pleinement fonctionnelle. Les données métier sont servies par une instance JSON Server hébergée sur Render. Cette instance étant gratuite, elle se met en veille après quinze minutes d'inactivité : la première requête peut alors prendre une cinquantaine de secondes.
 
 ---
@@ -43,7 +45,7 @@ profil sans changer de compte.
 
 | Module | Fonctionnalités principales |
 |---|---|
-| Authentification | Connexion et inscription, session de trente minutes prolongée automatiquement, routes protégées par rôle, blocage après trois échecs |
+| Authentification | Connexion, session de trente minutes prolongée automatiquement, routes protégées par rôle, blocage après trois échecs |
 | Tableau de bord | Un indicateur clé par domaine, alertes de stock, météo et prévisions à cinq jours, notifications, état de disponibilité des API externes |
 | Gestion de projets | Liste et détail des projets, tableau Kanban des tâches avec création et suppression, commentaires, suppression d'un projet réservée aux gestionnaires |
 | Ressources humaines | Administration des employés, équipes avec analyse des écarts de compétences, demandes de congés, création et validation par un gestionnaire, solde de congés, calendrier, présence |
@@ -102,6 +104,19 @@ Deux terminaux sont nécessaires : l'un pour l'API locale, l'autre pour l'applic
 npm run server   # API locale sur le port 3001
 npm run dev      # application sur le port 5173
 ```
+
+### Connexion
+
+L'authentification repose sur Reqres.in, qui n'accepte que ses comptes de
+démonstration : la création de compte n'est donc pas possible. Utilisez :
+
+| E-mail | Mot de passe |
+|---|---|
+| `eve.holt@reqres.in` | `pistol` |
+
+Une fois connecté, le sélecteur de rôle du menu utilisateur, en haut à droite, permet de
+passer d'un profil à l'autre (administrateur, gestionnaire, utilisateur) pour vérifier
+les droits de chacun sans changer de compte.
 
 ---
 
