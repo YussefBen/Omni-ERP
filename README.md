@@ -489,6 +489,21 @@ Bonus monitoring, sept mesures mises en place.
 | Alertes Slack | Service indisponible détecté, ou erreur critique de rendu |
 | Traçage distribué (OpenTelemetry) | Chaque appel réseau instrumenté automatiquement, envoyé à Honeycomb |
 
+### Scores Lighthouse
+
+Passage médian sur trois, mesuré par Lighthouse CI à chaque envoi sur `dev`.
+
+| Catégorie | Score |
+|---|---|
+| Performance | **91/100** |
+| Accessibilité | 84/100 |
+| Bonnes pratiques | 100/100 |
+| Référencement | 90/100 |
+
+Le score d'accessibilité reste sous l'objectif de 90 fixé dans la configuration. Il est
+signalé par un avertissement à chaque envoi, et les points relevés par l'audit restent
+à corriger.
+
 ### Ce qui est réel, ce qui est démonstratif
 
 Le suivi des erreurs, les Web Vitals, l'audience et le traçage sont des mesures directes,
