@@ -1,0 +1,19 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 1rem);
+  margin-bottom: var(--spacing-md, 1rem);
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.select {
+  padding: var(--spacing-sm, 0.5rem);
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--color-surface, #fff);
+  color: var(--color-text, #1a1a1a);
+}
