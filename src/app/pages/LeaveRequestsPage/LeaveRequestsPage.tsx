@@ -1,8 +1,10 @@
+import { LeaveBalanceSummary } from '@/features/hrm/components/LeaveBalanceSummary/LeaveBalanceSummary';
 import { LeaveCalendar } from '@/features/hrm/components/LeaveCalendar/LeaveCalendar';
 import { LeaveRequestForm } from '@/features/hrm/components/LeaveRequestForm/LeaveRequestForm';
 import { PresenceTracker } from '@/features/hrm/components/PresenceTracker/PresenceTracker';
 import { Tabs } from '@/shared/components/Tabs/Tabs';
 import { useCurrentUserId } from '@/shared/hooks/useCurrentUser';
+import { AssignLeaveForm } from '@/features/hrm/components/AssignLeaveForm/AssignLeaveForm';
 import styles from './LeaveRequestsPage.module.css';
 
 // Pas de route dédiée à la présence dans le router : regroupée ici avec les
@@ -24,12 +26,16 @@ export function LeaveRequestsPage() {
 
         <Tabs.Panels>
           <Tabs.Panel value="calendar">
+            <AssignLeaveForm />
             <LeaveCalendar />
           </Tabs.Panel>
 
           <Tabs.Panel value="request">
             {currentUserId !== undefined ? (
-              <LeaveRequestForm employeeId={currentUserId} />
+              <>
+                <LeaveBalanceSummary employeeId={currentUserId} />
+                <LeaveRequestForm employeeId={currentUserId} />
+              </>
             ) : (
               <p role="alert">Connecte-toi pour faire une demande de congé.</p>
             )}

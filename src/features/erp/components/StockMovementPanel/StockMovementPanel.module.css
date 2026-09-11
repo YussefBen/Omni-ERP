@@ -1,0 +1,109 @@
+.panel {
+  border-top: 1px solid var(--color-border, #e0e0e0);
+  padding-top: var(--spacing-sm, 0.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+}
+
+.title {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.rotationStats {
+  display: flex;
+  gap: var(--spacing-md, 1rem);
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #666);
+}
+
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs, 0.25rem);
+}
+
+.select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: var(--radius-sm, 4px);
+}
+
+.quantityInput {
+  width: 4rem;
+}
+
+.reasonInput {
+  flex: 1;
+  min-width: 160px;
+}
+
+.submitButton {
+  padding: 0.3rem 0.75rem;
+  border: none;
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--color-primary, #6d3bd4);
+  color: #fff;
+  cursor: pointer;
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 0.5rem);
+  font-size: 0.8rem;
+}
+
+.typeBadge {
+  padding: 1px 6px;
+  border-radius: var(--radius-sm, 4px);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.entree {
+  background-color: var(--color-success-bg, #e6f7ed);
+  color: var(--color-success, #16a34a);
+}
+
+.sortie {
+  background-color: var(--color-warning-bg, #fff4e5);
+  color: var(--color-warning, #f5a623);
+}
+
+.ajustement {
+  background-color: var(--color-info-bg, #e6f0ff);
+  color: var(--color-info, #3b82f6);
+}
+
+.historyQuantity {
+  font-weight: 600;
+}
+
+.historyReason {
+  color: var(--color-text-muted, #666);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.error {
+  color: var(--color-danger, #e5484d);
+  font-size: 0.85rem;
+}

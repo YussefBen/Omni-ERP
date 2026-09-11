@@ -9,6 +9,7 @@ import { useTasks } from '../../hooks/useTasks';
 import type { ProjectStatus } from '../../types';
 import { CommentThread } from '../CommentThread/CommentThread';
 import styles from './ProjectDetail.module.css';
+import { withPermissions } from '@/features/auth';
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {
   a_faire: 'À faire',
@@ -16,6 +17,22 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
   termine: 'Terminé',
   en_pause: 'En pause',
 };
+
+interface DeleteProjectButtonProps {
+  onDelete: () => void;
+  isDeleting: boolean;
+}
+
+// Réservé aux administrateurs : supprimer un projet est définitif.
+function RawDeleteProjectButton({ onDelete, isDeleting }: DeleteProjectButtonProps) {
+  return (
+   <Button variant="danger" onClick={onDelete} disabled={isDeleting}>
+      {isDeleting ? 'Suppression...' : 'Supprimer le projet'}
+    </Button>
+  );
+}
+
+const DeleteProjectButton = withPermissions(RawDeleteProjectButton, ['admin', 'manager']);
 
 interface ProjectDetailProps {
   projectId: number;
@@ -96,9 +113,7 @@ export function ProjectDetail({ projectId, currentUserId, onDeleted }: ProjectDe
               Changer le statut
             </Button>
           )}
-          <Button variant="danger" onClick={handleDelete} disabled={isDeleting}>
-            {isDeleting ? 'Suppression...' : 'Supprimer le projet'}
-          </Button>
+        <DeleteProjectButton onDelete={handleDelete} isDeleting={isDeleting} />
         </div>
       </Card>
 

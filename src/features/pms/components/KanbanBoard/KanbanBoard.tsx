@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState, type DragEvent } from 'react';
+import { useMemo, useState, type DragEvent, type FormEvent } from 'react';
 import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
-import { useUpdateTask } from '../../hooks/useTaskMutations';
+import { useCreateTask, useDeleteTask, useUpdateTask } from '../../hooks/useTaskMutations';
 import { useTasks } from '../../hooks/useTasks';
+import { useEventTracking } from '@/features/monitoring';
 import type { Task, TaskStatus } from '../../types';
 import styles from './KanbanBoard.module.css';
 
@@ -26,7 +27,6 @@ export type KanbanAction = KanbanMoveAction;
 
 export type KanbanStateReducer = (state: KanbanState, action: KanbanAction) => KanbanState;
 
-// Reducer par défaut : applique simplement le déplacement demandé, sans condition
 function defaultKanbanReducer(state: KanbanState, action: KanbanAction): KanbanState {
   switch (action.type) {
     case 'MOVE_TASK':
@@ -41,44 +41,30 @@ function defaultKanbanReducer(state: KanbanState, action: KanbanAction): KanbanS
 }
 
 interface KanbanBoardProps {
-  // Si fourni, n'affiche que les tâches de ce projet ; sinon toutes les tâches, tous projets confondus
   projectId?: number;
-  // Vrai State Reducer Pattern : le parent peut intercepter/modifier/bloquer une transition
-  // avant qu'elle s'applique (pas un simple useReducer interne). Reçoit l'état courant + l'action,
-  // retourne le nouvel état. Si non fourni, defaultKanbanReducer s'applique tel quel.
-  //
-  // Exemple d'usage côté parent, pour interdire de repasser une tâche "terminée" en "à faire" :
-  //
-  // <KanbanBoard
-  //   projectId={project.id}
-  //   stateReducer={(state, action) => {
-  //     if (action.type === 'MOVE_TASK') {
-  //       const task = state.tasks.find((t) => t.id === action.taskId);
-  //       if (task?.status === 'termine' && action.toStatus === 'a_faire') return state; // bloqué
-  //     }
-  //     return defaultKanbanReducer(state, action); // le parent délègue au comportement par défaut
-  //   }}
-  // />
+  // Permet au parent d'intercepter/bloquer une transition avant application
   stateReducer?: KanbanStateReducer;
 }
 
 export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
   const tasksQuery = useTasks(projectId, { pageSize: 1000 });
   const { mutate: updateTask } = useUpdateTask();
+  const { mutate: createTask, isPending: isCreating } = useCreateTask();
+  const { mutate: deleteTask } = useDeleteTask();
+  const { trackEvent } = useEventTracking();
 
+  const [newTaskTitle, setNewTaskTitle] = useState('');
   const [state, setState] = useState<KanbanState>({ tasks: [] });
 
-  // Resynchronise l'état local à chaque mise à jour serveur : succès de la mutation, mais aussi
-  // rollback automatique du cache React Query si updateTask échoue (voir useUpdateTask).
-  useEffect(() => {
+  // Resync pendant le rendu, pas dans un effet
+  const [syncedData, setSyncedData] = useState(tasksQuery.data);
+  if (tasksQuery.data !== syncedData) {
+    setSyncedData(tasksQuery.data);
     if (tasksQuery.data) {
       setState({ tasks: tasksQuery.data.items });
     }
-  }, [tasksQuery.data]);
+  }
 
-  // Point d'entrée unique de toute transition d'état : passe par stateReducer si fourni, sinon
-  // par le reducer par défaut. C'est la différence avec un useReducer interne classique — ici,
-  // le parent peut totalement intercepter, modifier ou annuler la transition avant application.
   function dispatch(action: KanbanAction) {
     const reducer = stateReducer ?? defaultKanbanReducer;
     setState((currentState) => reducer(currentState, action));
@@ -100,10 +86,22 @@ export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
     const task = state.tasks.find((t) => t.id === taskId);
     if (!task || task.status === toStatus) return;
 
-    // Optimiste côté board (instantané), puis persistance réelle via la mutation React Query
-    // (qui a elle-même son propre optimistic update + rollback sur le cache global, voir plus haut)
     dispatch({ type: 'MOVE_TASK', taskId, toStatus });
     updateTask({ id: taskId, status: toStatus });
+  }
+
+  function handleAddTask(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const title = newTaskTitle.trim();
+    if (!title || !projectId) return;
+    createTask({ projectId, title });
+    trackEvent('task_created', { projectId });
+    setNewTaskTitle('');
+  }
+
+  function handleDeleteTask(taskId: number) {
+    if (!window.confirm('Supprimer cette tâche ?')) return;
+    deleteTask(taskId);
   }
 
   if (tasksQuery.isLoading) return <Spinner label="Chargement du tableau..." />;
@@ -141,10 +139,34 @@ export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
                 draggable
                 onDragStart={(event) => event.dataTransfer.setData('text/plain', String(task.id))}
               >
-                <p className={styles.taskTitle}>{task.title}</p>
+                <div className={styles.taskHeader}>
+                  <p className={styles.taskTitle}>{task.title}</p>
+                  <button
+                    type="button"
+                    className={styles.deleteTask}
+                    onClick={() => handleDeleteTask(task.id)}
+                    aria-label={`Supprimer la tâche ${task.title}`}
+                  >
+                    ×
+                  </button>
+                </div>
                 <span className={styles.taskHours}>{task.estimatedHours}h estimées</span>
               </Card>
             ))}
+
+            {column.status === 'a_faire' && projectId && (
+              <form className={styles.addTaskForm} onSubmit={handleAddTask}>
+                <input
+                  type="text"
+                  className={styles.addTaskInput}
+                  placeholder="Nouvelle tâche..."
+                  value={newTaskTitle}
+                  onChange={(event) => setNewTaskTitle(event.target.value)}
+                  disabled={isCreating}
+                  aria-label="Titre de la nouvelle tâche"
+                />
+              </form>
+            )}
           </div>
         </div>
       ))}

@@ -67,6 +67,52 @@
   font-weight: 500;
 }
 
+.oppHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.deleteOpp {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-muted, #666);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.1rem;
+}
+
+.deleteOpp:hover {
+  color: var(--color-danger, #e5484d);
+}
+
+.ownerSelect {
+  margin-top: 2px;
+  font-size: 0.7rem;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--color-surface, #fff);
+  color: var(--color-text-muted, #666);
+  padding: 1px 2px;
+}
+
+.createForm {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 0.25rem;
+}
+
+.createInput {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: var(--radius-sm, 4px);
+}
+
 .oppAmount {
   font-size: 0.75rem;
   color: var(--color-success, #16a34a);
