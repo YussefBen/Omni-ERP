@@ -419,3 +419,12 @@ l'installation.
 | Jessica | Authentification, gestion de projets, ressources humaines, paramètres, supervision |
 | Youssef | Relation client, ressources d'entreprise, intelligence d'affaires, tableau de bord, sécurité |
 | Rafael | Interface complète, composants partagés, accessibilité, performance |
+
+
+## Storybook
+
+Catalogue des 15 composants partagés, avec leurs états, leurs props et une bascule clair/sombre dans la barre d'outils.
+
+    npm run storybook
+
+Puis ouvrir http://localhost:6006.
