@@ -1,4 +1,9 @@
 export { useEmployees } from './hooks/useEmployees';
+export {
+  useCreateEmployee,
+  useUpdateEmployee,
+  useDeleteEmployee,
+} from './hooks/useEmployeeMutations';
 export { useTeams } from './hooks/useTeams';
 export { useSkills } from './hooks/useSkills';
 export { getSkillGapAnalysis } from './hooks/gapAnalysis';
