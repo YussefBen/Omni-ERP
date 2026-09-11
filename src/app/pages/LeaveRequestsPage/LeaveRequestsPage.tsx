@@ -1,3 +1,4 @@
+import { LeaveBalanceSummary } from '@/features/hrm/components/LeaveBalanceSummary/LeaveBalanceSummary';
 import { LeaveCalendar } from '@/features/hrm/components/LeaveCalendar/LeaveCalendar';
 import { LeaveRequestForm } from '@/features/hrm/components/LeaveRequestForm/LeaveRequestForm';
 import { PresenceTracker } from '@/features/hrm/components/PresenceTracker/PresenceTracker';
@@ -29,7 +30,10 @@ export function LeaveRequestsPage() {
 
           <Tabs.Panel value="request">
             {currentUserId !== undefined ? (
-              <LeaveRequestForm employeeId={currentUserId} />
+              <>
+                <LeaveBalanceSummary employeeId={currentUserId} />
+                <LeaveRequestForm employeeId={currentUserId} />
+              </>
             ) : (
               <p role="alert">Connecte-toi pour faire une demande de congé.</p>
             )}
