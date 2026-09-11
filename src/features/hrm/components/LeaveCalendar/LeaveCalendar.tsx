@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/shared/components/Button/Button';
 import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
+import { withPermissions } from '@/features/auth';
 import { useEmployees } from '../../hooks/useEmployees';
 import { useLeaveRequests, useUpdateLeaveStatus } from '../../hooks/useLeaveRequests';
 import type { LeaveRequest } from '../../types';
@@ -40,6 +41,28 @@ function initials(name: string | undefined): string {
     .map((part) => part[0])
     .join('');
 }
+
+interface PendingActionsProps {
+  leaveId: number;
+  isUpdating: boolean;
+  onUpdate: (id: number, status: 'approved' | 'rejected') => void;
+}
+
+// Valider/refuser le congé de quelqu'un d'autre est réservé aux managers/admins.
+function RawPendingActions({ leaveId, isUpdating, onUpdate }: PendingActionsProps) {
+  return (
+    <div className={styles.pendingActions}>
+      <Button variant="primary" disabled={isUpdating} onClick={() => onUpdate(leaveId, 'approved')}>
+        Valider
+      </Button>
+      <Button variant="danger" disabled={isUpdating} onClick={() => onUpdate(leaveId, 'rejected')}>
+        Refuser
+      </Button>
+    </div>
+  );
+}
+
+const PendingActions = withPermissions(RawPendingActions, ['admin', 'manager']);
 
 export function LeaveCalendar() {
   const [cursor, setCursor] = useState(() => {
@@ -174,22 +197,11 @@ export function LeaveCalendar() {
                     {leave.startDate} → {leave.endDate}
                   </p>
                 </div>
-                <div className={styles.pendingActions}>
-                  <Button
-                    variant="primary"
-                    disabled={isUpdating}
-                    onClick={() => updateStatus({ id: leave.id, status: 'approved' })}
-                  >
-                    Valider
-                  </Button>
-                  <Button
-                    variant="danger"
-                    disabled={isUpdating}
-                    onClick={() => updateStatus({ id: leave.id, status: 'rejected' })}
-                  >
-                    Refuser
-                  </Button>
-                </div>
+                <PendingActions
+                  leaveId={leave.id}
+                  isUpdating={isUpdating}
+                  onUpdate={(id, status) => updateStatus({ id, status })}
+                />
               </li>
             ))}
           </ul>
