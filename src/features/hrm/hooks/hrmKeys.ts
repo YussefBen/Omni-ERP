@@ -5,6 +5,9 @@ export const hrmKeys = {
   all: ['hrm'] as const,
 
   employees: (filters: EmployeeFilters = {}) => [...hrmKeys.all, 'employees', filters] as const,
+  // Préfixe sans les filtres : utilisé pour invalider TOUTES les listes d'employés
+  // après une mutation, quel que soit le filtre avec lequel chacune a été chargée.
+  employeesRoot: () => [...hrmKeys.all, 'employees'] as const,
   teams: () => [...hrmKeys.all, 'teams'] as const,
   skills: () => [...hrmKeys.all, 'skills'] as const,
 

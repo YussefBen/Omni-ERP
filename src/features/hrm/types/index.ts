@@ -62,6 +62,31 @@ export interface EmployeeFilters {
   availableOnly?: boolean;
 }
 
+// Surcharge locale : Reqres ne permet aucune vraie écriture (comme JSONPlaceholder
+// pour les projets), les modifications sont donc stockées à part et fusionnées à la lecture.
+export interface EmployeeOverride {
+  id: number;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  city?: string;
+  country?: string;
+  department?: string;
+  jobTitle?: string;
+}
+
+export interface CreateEmployeePayload {
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  city?: string;
+  country?: string;
+  department?: string;
+  jobTitle?: string;
+}
+
+export type UpdateEmployeePayload = Partial<Omit<EmployeeOverride, 'id'>> & { id: number };
+
 /* ---------- Équipe ---------- */
 
 // Équipe reconstituée depuis les employés

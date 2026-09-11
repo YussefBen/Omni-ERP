@@ -15,6 +15,7 @@ import {
   mockOrderMeta,
   mockPipelineStages,
   mockPmsComments,
+  mockEmployeeOverrides,
   mockPresenceEntries,
   mockProducts,
   mockProjectOverrides,
@@ -404,6 +405,29 @@ const myJsonServerHandlers = [
 
     mockPresenceEntries[index] = { ...mockPresenceEntries[index], ...body };
     return HttpResponse.json(mockPresenceEntries[index]);
+  }),
+
+  http.get(`${LOCAL}/employeeOverrides`, () => HttpResponse.json(mockEmployeeOverrides)),
+
+  http.post(`${LOCAL}/employeeOverrides`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    mockEmployeeOverrides.push(body as never);
+    return HttpResponse.json(body, { status: 201 });
+  }),
+
+  http.patch(`${LOCAL}/employeeOverrides/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const index = mockEmployeeOverrides.findIndex((o) => o.id === Number(params.id));
+    if (index === -1) return new HttpResponse(null, { status: 404 });
+
+    mockEmployeeOverrides[index] = { ...mockEmployeeOverrides[index], ...body };
+    return HttpResponse.json(mockEmployeeOverrides[index]);
+  }),
+
+  http.delete(`${LOCAL}/employeeOverrides/:id`, ({ params }) => {
+    const index = mockEmployeeOverrides.findIndex((o) => o.id === Number(params.id));
+    if (index !== -1) mockEmployeeOverrides.splice(index, 1);
+    return new HttpResponse(null, { status: 200 });
   }),
 
   http.get(`${LOCAL}/projects`, () => HttpResponse.json(mockProjectOverrides)),

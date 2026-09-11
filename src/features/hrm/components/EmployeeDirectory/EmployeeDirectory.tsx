@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
+import { CreateEmployeeForm } from '../CreateEmployeeForm/CreateEmployeeForm';
 import { useEmployees } from '../../hooks/useEmployees';
 import { useTeams } from '../../hooks/useTeams';
 import { EmployeeProfile } from '../EmployeeProfile/EmployeeProfile.tsx';
@@ -58,6 +59,8 @@ export function EmployeeDirectory() {
   return (
     <div className={styles.layout}>
       <div className={styles.listColumn}>
+        <CreateEmployeeForm />
+
         <div className={styles.filters}>
           <input
             type="search"

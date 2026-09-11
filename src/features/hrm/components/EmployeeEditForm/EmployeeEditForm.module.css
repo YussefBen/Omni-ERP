@@ -1,0 +1,30 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+  border-top: 1px solid var(--color-border, #e0e0e0);
+  padding-top: var(--spacing-sm, 0.5rem);
+  margin-top: var(--spacing-sm, 0.5rem);
+}
+
+.title {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.field label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #666);
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-sm, 0.5rem);
+  margin-top: var(--spacing-xs, 0.25rem);
+}
