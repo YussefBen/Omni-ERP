@@ -19,13 +19,15 @@ function formatCls(value: number | null): string {
 export function SupervisionWidget() {
   const { data: services, isLoading } = useHealthChecks();
   const vitals = useWebVitals();
+  // Déploiement progressif : la section Web Vitals n'apparaît que pour les
+  // 10% de navigateurs tirés au sort, une fois le flag activé sur Flagsmith.
+  // Les Health Checks restent visibles pour tout le monde.
   const showVitals = useCanaryFeature('health_dashboard_widget');
 
   return (
     <Card className={styles.card}>
       <h2 className={styles.title}>Supervision</h2>
 
-      {showVitals && (
       <section>
         <h3 className={styles.sectionTitle}>Services</h3>
         {isLoading || !services ? (
@@ -48,18 +50,19 @@ export function SupervisionWidget() {
           </ul>
         )}
       </section>
-      )}
 
-      <section>
-        <h3 className={styles.sectionTitle}>Performance ressentie</h3>
-        <div className={styles.vitalsGrid}>
-          <span>CLS {formatCls(vitals.cls)}</span>
-          <span>INP {formatMs(vitals.inp)}</span>
-          <span>LCP {formatMs(vitals.lcp)}</span>
-          <span>FCP {formatMs(vitals.fcp)}</span>
-          <span>TTFB {formatMs(vitals.ttfb)}</span>
-        </div>
-      </section>
+      {showVitals && (
+        <section>
+          <h3 className={styles.sectionTitle}>Performance ressentie</h3>
+          <div className={styles.vitalsGrid}>
+            <span>CLS {formatCls(vitals.cls)}</span>
+            <span>INP {formatMs(vitals.inp)}</span>
+            <span>LCP {formatMs(vitals.lcp)}</span>
+            <span>FCP {formatMs(vitals.fcp)}</span>
+            <span>TTFB {formatMs(vitals.ttfb)}</span>
+          </div>
+        </section>
+      )}
     </Card>
   );
 }

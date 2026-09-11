@@ -4,6 +4,7 @@ import { LeaveRequestForm } from '@/features/hrm/components/LeaveRequestForm/Lea
 import { PresenceTracker } from '@/features/hrm/components/PresenceTracker/PresenceTracker';
 import { Tabs } from '@/shared/components/Tabs/Tabs';
 import { useCurrentUserId } from '@/shared/hooks/useCurrentUser';
+import { AssignLeaveForm } from '@/features/hrm/components/AssignLeaveForm/AssignLeaveForm';
 import styles from './LeaveRequestsPage.module.css';
 
 // Pas de route dédiée à la présence dans le router : regroupée ici avec les
@@ -25,6 +26,7 @@ export function LeaveRequestsPage() {
 
         <Tabs.Panels>
           <Tabs.Panel value="calendar">
+            <AssignLeaveForm />
             <LeaveCalendar />
           </Tabs.Panel>
 
