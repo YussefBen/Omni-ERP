@@ -30,3 +30,6 @@ dist-ssr
 !.env.example
 coverage
 *.pdf
+
+*storybook.log
+storybook-static
