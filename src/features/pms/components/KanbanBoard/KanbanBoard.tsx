@@ -3,6 +3,7 @@ import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
 import { useCreateTask, useDeleteTask, useUpdateTask } from '../../hooks/useTaskMutations';
 import { useTasks } from '../../hooks/useTasks';
+import { useEventTracking } from '@/features/monitoring';
 import type { Task, TaskStatus } from '../../types';
 import styles from './KanbanBoard.module.css';
 
@@ -50,6 +51,7 @@ export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
   const { mutate: updateTask } = useUpdateTask();
   const { mutate: createTask, isPending: isCreating } = useCreateTask();
   const { mutate: deleteTask } = useDeleteTask();
+  const { trackEvent } = useEventTracking();
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [state, setState] = useState<KanbanState>({ tasks: [] });
@@ -93,6 +95,7 @@ export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
     const title = newTaskTitle.trim();
     if (!title || !projectId) return;
     createTask({ projectId, title });
+    trackEvent('task_created', { projectId });
     setNewTaskTitle('');
   }
 

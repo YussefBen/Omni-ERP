@@ -1,5 +1,5 @@
 import { Card } from '@/shared/components/Card/Card';
-import { useHealthChecks, useWebVitals } from '@/features/monitoring';
+import { useCanaryFeature, useHealthChecks, useWebVitals } from '@/features/monitoring';
 import styles from './SupervisionWidget.module.css';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -19,11 +19,13 @@ function formatCls(value: number | null): string {
 export function SupervisionWidget() {
   const { data: services, isLoading } = useHealthChecks();
   const vitals = useWebVitals();
+  const showVitals = useCanaryFeature('health_dashboard_widget');
 
   return (
     <Card className={styles.card}>
       <h2 className={styles.title}>Supervision</h2>
 
+      {showVitals && (
       <section>
         <h3 className={styles.sectionTitle}>Services</h3>
         {isLoading || !services ? (
@@ -46,6 +48,7 @@ export function SupervisionWidget() {
           </ul>
         )}
       </section>
+      )}
 
       <section>
         <h3 className={styles.sectionTitle}>Performance ressentie</h3>
