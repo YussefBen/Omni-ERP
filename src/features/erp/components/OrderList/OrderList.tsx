@@ -4,6 +4,7 @@ import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
 import { getAllowedOrderTransitions, useOrders, useUpdateOrderStatus } from '../../hooks/useOrders';
 import type { Order, OrderStatus } from '../../types';
+import { OrderDetail } from '../OrderDetail/OrderDetail';
 import styles from './OrderList.module.css';
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
@@ -23,6 +24,7 @@ interface OrderCardProps {
   order: Order;
   isUpdating: boolean;
   onTransition: (order: Order, nextStatus: OrderStatus) => void;
+  onViewDetail: (orderId: number) => void;
 }
 
 /**
@@ -33,14 +35,16 @@ interface OrderCardProps {
  * useCallback côté parent : sans cela, une nouvelle référence à chaque
  * rendu suffirait à invalider la mémorisation.
  */
-const OrderCard = memo(function OrderCard({ order, isUpdating, onTransition }: OrderCardProps) {
+const OrderCard = memo(function OrderCard({order,isUpdating,onTransition,onViewDetail,}: OrderCardProps) {
   const allowedTransitions = getAllowedOrderTransitions(order.status);
   const hasDiscount = order.discountedAmount < order.totalAmount;
 
   return (
     <Card className={styles.orderCard}>
       <div className={styles.orderHeader}>
-        <span className={styles.orderId}>Commande #{order.id}</span>
+        <button type="button" className={styles.orderId} onClick={() => onViewDetail(order.id)}>
+          Commande #{order.id}
+        </button>
         <span className={`${styles.statusBadge} ${styles[order.status]}`}>
           {STATUS_LABELS[order.status]}
         </span>
@@ -88,6 +92,7 @@ const OrderCard = memo(function OrderCard({ order, isUpdating, onTransition }: O
 export function OrderList() {
   const [status, setStatus] = useState<OrderStatus | ''>('');
   const [page, setPage] = useState(1);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
   const { data, isLoading, isFetching, isError, error, totalPages } = useOrders({
     status: status || undefined,
@@ -109,8 +114,13 @@ export function OrderList() {
     [updateStatus],
   );
 
+  const handleViewDetail = useCallback((orderId: number) => setSelectedOrderId(orderId), []);
+
   return (
     <div className={styles.container}>
+      {selectedOrderId && (
+        <OrderDetail orderId={selectedOrderId} onClose={() => setSelectedOrderId(null)} />
+      )}
       <div className={styles.toolbar}>
         <select
           className={styles.select}
@@ -150,6 +160,7 @@ export function OrderList() {
                 order={order}
                 isUpdating={isUpdating}
                 onTransition={handleTransition}
+                onViewDetail={handleViewDetail}
               />
             ))}
           </div>

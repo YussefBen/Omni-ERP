@@ -1,0 +1,139 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 1rem);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0;
+}
+
+.closeButton {
+  border: none;
+  background: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--color-text-muted, #666);
+}
+
+.closeButton:hover {
+  color: var(--color-text, #1a1a1a);
+}
+
+.metaList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.metaRow dt {
+  color: var(--color-text-muted, #666);
+}
+
+.statusBadge {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm, 4px);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.brouillon {
+  background-color: var(--color-border, #e0e0e0);
+  color: var(--color-text-muted, #666);
+}
+
+.confirmee {
+  background-color: var(--color-info-bg, #e6f0ff);
+  color: var(--color-info, #3b82f6);
+}
+
+.preparation,
+.expediee {
+  background-color: var(--color-warning-bg, #fff4e5);
+  color: var(--color-warning, #f5a623);
+}
+
+.livree {
+  background-color: var(--color-success-bg, #e6f7ed);
+  color: var(--color-success, #16a34a);
+}
+
+.annulee {
+  background-color: var(--color-danger-bg, #fdecec);
+  color: var(--color-danger, #e5484d);
+}
+
+.linesTitle {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.linesList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 0.5rem);
+  font-size: 0.875rem;
+}
+
+.lineThumb {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--color-surface-hover, #f5f5f5);
+}
+
+.lineTitle {
+  flex: 1;
+}
+
+.lineQuantity {
+  color: var(--color-text-muted, #666);
+}
+
+.totalRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-sm, 0.5rem);
+  padding-top: var(--spacing-sm, 0.5rem);
+  border-top: 1px solid var(--color-border, #e0e0e0);
+}
+
+.oldTotal {
+  text-decoration: line-through;
+  color: var(--color-text-muted, #666);
+  font-size: 0.875rem;
+}
+
+.total {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.error {
+  color: var(--color-danger, #e5484d);
+}

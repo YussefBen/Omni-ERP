@@ -1,10 +1,22 @@
-import type { DragEvent } from 'react';
+import { useState, type DragEvent, type FormEvent } from 'react';
 import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
-import { useOpportunities, usePipelineStages, useUpdateOpportunity } from '../../hooks/useOpportunities';
+import {
+  useAssignOpportunity,
+  useCreateOpportunity,
+  useDeleteOpportunity,
+  useOpportunities,
+  usePipelineStages,
+  useUpdateOpportunity,
+} from '../../hooks/useOpportunities';
 import { usePipelineObserver } from '../../hooks/usePipelineObserver';
+import { SALES_REPS } from '../../hooks/salesReps';
 import type { Opportunity, PipelineStageId } from '../../types';
 import styles from './Pipeline.module.css';
+
+function inThirtyDays(): string {
+  return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+}
 
 interface PipelineEventLike {
   type: 'stage-changed' | 'created' | 'deleted';
@@ -48,6 +60,14 @@ export function Pipeline() {
   } = useOpportunities();
 
   const { mutate: updateOpportunity } = useUpdateOpportunity();
+  const { mutate: createOpportunity, isPending: isCreating } = useCreateOpportunity();
+  const { mutate: deleteOpportunity } = useDeleteOpportunity();
+  const { mutate: assignOpportunity } = useAssignOpportunity();
+
+  const [newTitle, setNewTitle] = useState('');
+  const [newAmount, setNewAmount] = useState('1000');
+  const [newClientId, setNewClientId] = useState('1');
+  const [newOwnerId, setNewOwnerId] = useState(String(SALES_REPS[0].id));
 
   // Historique local des changements d'étape : alimenté par les mutations de CETTE session
   // (bus RxJS en mémoire), pas par un vrai push serveur multi-utilisateurs.
@@ -72,6 +92,36 @@ export function Pipeline() {
 
   function opportunitiesForStage(stageId: PipelineStageId): Opportunity[] {
     return opportunities?.filter((opportunity) => opportunity.stageId === stageId) ?? [];
+  }
+
+  function handleCreate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const title = newTitle.trim();
+    const amount = Number(newAmount);
+    const clientId = Number(newClientId);
+    const owner = SALES_REPS.find((rep) => rep.id === Number(newOwnerId));
+    if (!title || !amount || !clientId || !owner || sortedStages.length === 0) return;
+
+    createOpportunity({
+      title,
+      clientId,
+      amount,
+      owner,
+      stageId: sortedStages[0].id,
+      expectedCloseDate: inThirtyDays(),
+    });
+    setNewTitle('');
+  }
+
+  function handleDelete(opportunityId: number) {
+    if (!window.confirm('Supprimer cette opportunité ?')) return;
+    deleteOpportunity(opportunityId);
+  }
+
+  function handleAssign(opportunityId: number, ownerId: number) {
+    const owner = SALES_REPS.find((rep) => rep.id === ownerId);
+    if (!owner) return;
+    assignOpportunity({ id: opportunityId, owner });
   }
 
   function handleDrop(event: DragEvent<HTMLDivElement>, toStage: PipelineStageId) {
@@ -114,16 +164,76 @@ export function Pipeline() {
                     event.dataTransfer.setData('text/plain', String(opportunity.id))
                   }
                 >
-                  <p className={styles.oppTitle}>{opportunity.title}</p>
+                  <div className={styles.oppHeader}>
+                    <p className={styles.oppTitle}>{opportunity.title}</p>
+                    <button
+                      type="button"
+                      className={styles.deleteOpp}
+                      onClick={() => handleDelete(opportunity.id)}
+                      aria-label={`Supprimer ${opportunity.title}`}
+                    >
+                      ×
+                    </button>
+                  </div>
                   <span className={styles.oppAmount}>
                     {opportunity.amount.toLocaleString('fr-FR')} €
                   </span>
-                  <span className={styles.oppOwner}>
-                    {/* UserRef suppose au moins { id, name } ; à ajuster si la forme diffère */}
-                    {opportunity.owner?.name ?? `Commercial #${opportunity.owner?.id}`}
-                  </span>
+                  <select
+                    className={styles.ownerSelect}
+                    value={opportunity.owner?.id}
+                    onChange={(event) => handleAssign(opportunity.id, Number(event.target.value))}
+                    aria-label={`Commercial responsable de ${opportunity.title}`}
+                  >
+                    {SALES_REPS.map((rep) => (
+                      <option key={rep.id} value={rep.id}>
+                        {rep.name}
+                      </option>
+                    ))}
+                  </select>
                 </Card>
               ))}
+
+              {stage.id === sortedStages[0]?.id && (
+                <form className={styles.createForm} onSubmit={handleCreate}>
+                  <input
+                    type="text"
+                    className={styles.createInput}
+                    placeholder="Nouvelle opportunité..."
+                    value={newTitle}
+                    onChange={(event) => setNewTitle(event.target.value)}
+                    disabled={isCreating}
+                    aria-label="Titre de la nouvelle opportunité"
+                  />
+                  <input
+                    type="number"
+                    className={styles.createInput}
+                    placeholder="Montant €"
+                    value={newAmount}
+                    onChange={(event) => setNewAmount(event.target.value)}
+                    aria-label="Montant"
+                  />
+                  <input
+                    type="number"
+                    className={styles.createInput}
+                    placeholder="Client #"
+                    value={newClientId}
+                    onChange={(event) => setNewClientId(event.target.value)}
+                    aria-label="Identifiant du client"
+                  />
+                  <select
+                    className={styles.createInput}
+                    value={newOwnerId}
+                    onChange={(event) => setNewOwnerId(event.target.value)}
+                    aria-label="Commercial responsable"
+                  >
+                    {SALES_REPS.map((rep) => (
+                      <option key={rep.id} value={rep.id}>
+                        {rep.name}
+                      </option>
+                    ))}
+                  </select>
+                </form>
+              )}
             </div>
           </div>
         ))}

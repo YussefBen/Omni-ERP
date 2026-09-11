@@ -1,0 +1,67 @@
+.card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg, 1.5rem);
+  margin-bottom: var(--spacing-md, 1rem);
+}
+
+.scoreBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+}
+
+.score {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.good {
+  color: var(--color-success, #16a34a);
+}
+
+.average {
+  color: var(--color-warning, #f5a623);
+}
+
+.bad {
+  color: var(--color-danger, #e5484d);
+}
+
+.scoreLabel {
+  font-size: 0.7rem;
+  color: var(--color-text-muted, #666);
+  text-align: center;
+}
+
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+}
+
+.promoters {
+  color: var(--color-success, #16a34a);
+}
+
+.passives {
+  color: var(--color-warning, #f5a623);
+}
+
+.detractors {
+  color: var(--color-danger, #e5484d);
+}
+
+.meta {
+  margin: 0;
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #666);
+}
+
+.error {
+  color: var(--color-danger, #e5484d);
+}
