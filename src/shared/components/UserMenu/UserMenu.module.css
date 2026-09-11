@@ -60,3 +60,12 @@
   background: var(--accent-bg);
   color: var(--text);
 }
+
+
+/* La liste déroulante est dessinée par le navigateur : sans couleurs
+   explicites, les options héritent du texte clair du menu sur un fond
+   qui, lui, ne suit pas le thème, et deviennent illisibles. */
+.devRoleSelect option {
+  background-color: var(--surface);
+  color: var(--text);
+}
