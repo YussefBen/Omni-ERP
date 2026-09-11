@@ -485,7 +485,7 @@ Bonus monitoring, sept mesures mises en place.
 | Web Vitals | Cinq métriques Core Web Vitals mesurées en continu |
 | Analyse d'audience (GA4) | Pages vues automatiques, événements métier à la charge de chaque domaine |
 | Feature flags et canary release | Activation par flag, tirage local à 10 % indépendant de la connexion |
-| Intégration continue (Lighthouse CI) | Score mesuré à chaque envoi sur `dev`, un seul passage |
+| Intégration continue (Lighthouse CI) | Score mesuré à chaque envoi sur `dev`, médiane de trois passages |
 | Alertes Slack | Service indisponible détecté, ou erreur critique de rendu |
 | Traçage distribué (OpenTelemetry) | Chaque appel réseau instrumenté automatiquement, envoyé à Honeycomb |
 
@@ -504,8 +504,9 @@ code ne peut pas vérifier que Slack l'a reçu (la réponse n'est pas lisible). 
 prolongée ne déclenche qu'une seule alerte, pas une par minute, pour éviter le bruit.
 
 Le score Lighthouse varie d'un envoi à l'autre selon la charge du serveur qui exécute le
-test : un seul passage est mesuré par envoi plutôt qu'une moyenne, pour garder le pipeline
-rapide.
+test. Chaque envoi mesure donc trois passages et retient le passage médian, comme le
+recommande la documentation de Lighthouse : un passage isolé, bon ou mauvais, ne suffit
+pas à juger.
 
 ---
 

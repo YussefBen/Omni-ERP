@@ -1,4 +1,4 @@
-import { useMemo, useState, type DragEvent, type FormEvent } from 'react';
+import { useMemo, useReducer, useState, type DragEvent, type FormEvent } from 'react';
 import { Card } from '@/shared/components/Card/Card';
 import { Spinner } from '@/shared/components/Spinner/Spinner';
 import { useCreateTask, useDeleteTask, useUpdateTask } from '../../hooks/useTaskMutations';
@@ -23,7 +23,13 @@ export interface KanbanMoveAction {
   toStatus: TaskStatus;
 }
 
-export type KanbanAction = KanbanMoveAction;
+// Injecte les tâches chargées depuis l'API dans le state du reducer
+export interface KanbanSyncAction {
+  type: 'SYNC_TASKS';
+  tasks: Task[];
+}
+
+export type KanbanAction = KanbanMoveAction | KanbanSyncAction;
 
 export type KanbanStateReducer = (state: KanbanState, action: KanbanAction) => KanbanState;
 
@@ -35,6 +41,8 @@ function defaultKanbanReducer(state: KanbanState, action: KanbanAction): KanbanS
           task.id === action.taskId ? { ...task, status: action.toStatus } : task,
         ),
       };
+    case 'SYNC_TASKS':
+      return { tasks: action.tasks };
     default:
       return state;
   }
@@ -54,20 +62,27 @@ export function KanbanBoard({ projectId, stateReducer }: KanbanBoardProps) {
   const { trackEvent } = useEventTracking();
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [state, setState] = useState<KanbanState>({ tasks: [] });
+
+  // State Reducer Pattern : le parent peut fournir son propre reducer pour
+  // intercepter/bloquer MOVE_TASK, mais SYNC_TASKS reste géré ici dans tous
+  // les cas (sinon un reducer custom qui ne le connaît pas casserait le chargement)
+  const reducer = useMemo(() => {
+    if (!stateReducer) return defaultKanbanReducer;
+    return (state: KanbanState, action: KanbanAction): KanbanState =>
+      action.type === 'SYNC_TASKS'
+        ? defaultKanbanReducer(state, action)
+        : stateReducer(state, action);
+  }, [stateReducer]);
+
+  const [state, dispatch] = useReducer(reducer, { tasks: [] });
 
   // Resync pendant le rendu, pas dans un effet
   const [syncedData, setSyncedData] = useState(tasksQuery.data);
   if (tasksQuery.data !== syncedData) {
     setSyncedData(tasksQuery.data);
     if (tasksQuery.data) {
-      setState({ tasks: tasksQuery.data.items });
+      dispatch({ type: 'SYNC_TASKS', tasks: tasksQuery.data.items });
     }
-  }
-
-  function dispatch(action: KanbanAction) {
-    const reducer = stateReducer ?? defaultKanbanReducer;
-    setState((currentState) => reducer(currentState, action));
   }
 
   const tasksByStatus = useMemo(() => {
