@@ -1,6 +1,7 @@
 import { Card } from '@/shared/components/Card/Card';
 import { Tabs } from '@/shared/components/Tabs/Tabs';
 import type { Employee } from '@/features/hrm/types';
+import { EmployeeEditForm } from '../EmployeeEditForm/EmployeeEditForm';
 import styles from './EmployeeProfile.module.css';
 
 const SKILL_LEVEL_LABELS: Record<Employee['skills'][number]['level'], string> = {
@@ -53,6 +54,8 @@ export function EmployeeProfile({ employee, teamName }: EmployeeProfileProps) {
               <dt>Équipe</dt>
               <dd>{teamName ?? `Équipe #${employee.teamId}`}</dd>
             </dl>
+
+            <EmployeeEditForm employee={employee} />
           </Tabs.Panel>
 
           <Tabs.Panel value="skills">

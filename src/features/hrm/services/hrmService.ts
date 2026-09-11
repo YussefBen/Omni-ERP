@@ -2,13 +2,16 @@ import axios from 'axios';
 import { API_CONFIG } from '@/shared/config/api';
 import { deriveDepartment, deriveJobTitle, deriveSkills, deriveTeamId } from '../hooks/hrmLogic';
 import type {
+  CreateEmployeePayload,
   CreateLeaveRequestPayload,
   Employee,
   EmployeeFilters,
+  EmployeeOverride,
   LeaveRequest,
   PresenceEntry,
   RandomUserListResponse,
   ReqresUserListResponse,
+  UpdateEmployeePayload,
   UpdateLeaveStatusPayload,
 } from '../types';
 
@@ -16,6 +19,10 @@ import type {
 const reqresApi = axios.create({ baseURL: API_CONFIG.reqres, timeout: 10000 });
 const randomUserApi = axios.create({ baseURL: API_CONFIG.randomUser, timeout: 10000 });
 const localApi = axios.create({ baseURL: API_CONFIG.jsonServer, timeout: 10000 });
+
+// Taille fixe du roster Reqres (12 comptes) : au-delà, un id désigne un
+// employé créé entièrement dans l'application, jamais sur Reqres.
+const EXTERNAL_EMPLOYEE_COUNT = 12;
 
 // Reqres a 12 comptes sur 2 pages
 async function fetchReqresRoster() {
@@ -34,14 +41,38 @@ async function fetchRandomUserProfiles(count: number) {
   return data.results;
 }
 
+async function fetchEmployeeOverrides(): Promise<EmployeeOverride[]> {
+  const { data } = await localApi.get<EmployeeOverride[]>('/employeeOverrides');
+  return data;
+}
+
+// N'écrase que les champs présents dans la surcharge, le reste vient de la source externe.
+function applyOverride(employee: Employee, override?: EmployeeOverride): Employee {
+  if (!override) return employee;
+  return {
+    ...employee,
+    firstName: override.firstName ?? employee.firstName,
+    lastName: override.lastName ?? employee.lastName,
+    phone: override.phone ?? employee.phone,
+    city: override.city ?? employee.city,
+    country: override.country ?? employee.country,
+    department: override.department ?? employee.department,
+    jobTitle: override.jobTitle ?? employee.jobTitle,
+  };
+}
+
 // Fusionne les deux sources + données inventées
 export async function fetchEmployees(filters: EmployeeFilters = {}): Promise<Employee[]> {
   const roster = await fetchReqresRoster();
-  const profiles = await fetchRandomUserProfiles(roster.length);
+  const [profiles, overrides] = await Promise.all([
+    fetchRandomUserProfiles(roster.length),
+    fetchEmployeeOverrides(),
+  ]);
+  const overrideById = new Map(overrides.map((o) => [o.id, o]));
 
   let employees: Employee[] = roster.map((account, index) => {
     const profile = profiles[index];
-    return {
+    const base: Employee = {
       id: account.id,
       firstName: account.first_name,
       lastName: account.last_name,
@@ -55,7 +86,32 @@ export async function fetchEmployees(filters: EmployeeFilters = {}): Promise<Emp
       teamId: deriveTeamId(account.id),
       skills: deriveSkills(account.id),
     };
+    return applyOverride(base, overrideById.get(account.id));
   });
+
+  // Employés créés entièrement dans l'application : une surcharge dont l'id ne
+  // correspond à aucun compte Reqres. Département/poste/compétences restent
+  // dérivés de l'id s'ils ne sont pas explicitement renseignés dans la surcharge,
+  // comme pour les employés du roster.
+  const rosterIds = new Set(roster.map((account) => account.id));
+  const localOnlyEmployees: Employee[] = overrides
+    .filter((override) => !rosterIds.has(override.id))
+    .map((override) => ({
+      id: override.id,
+      firstName: override.firstName ?? 'Sans prénom',
+      lastName: override.lastName ?? '',
+      email: '',
+      avatarUrl: '',
+      phone: override.phone ?? '',
+      city: override.city ?? '',
+      country: override.country ?? '',
+      department: override.department ?? deriveDepartment(override.id),
+      jobTitle: override.jobTitle ?? deriveJobTitle(override.id),
+      teamId: deriveTeamId(override.id),
+      skills: deriveSkills(override.id),
+    }));
+
+  employees = [...employees, ...localOnlyEmployees];
 
   // Recherche insensible à la casse
   if (filters.search) {
@@ -152,4 +208,45 @@ export async function checkOut(entryId: number): Promise<PresenceEntry> {
     checkOut: new Date().toISOString(),
   });
   return data;
+}
+
+/* ---------- Administration des employés (surcharge locale) ---------- */
+
+async function nextLocalEmployeeId(): Promise<number> {
+  const overrides = await fetchEmployeeOverrides();
+  const maxId = overrides.reduce((max, o) => Math.max(max, o.id ?? 0), EXTERNAL_EMPLOYEE_COUNT);
+  return maxId + 1;
+}
+
+export async function createEmployee(payload: CreateEmployeePayload): Promise<EmployeeOverride> {
+  const id = await nextLocalEmployeeId();
+  const { data } = await localApi.post<EmployeeOverride>('/employeeOverrides', { id, ...payload });
+  return data;
+}
+
+// Upsert : PATCH si une surcharge existe déjà pour cet id, sinon POST — même
+// logique que updateProject pour les projets d'origine JSONPlaceholder.
+export async function updateEmployee(payload: UpdateEmployeePayload): Promise<EmployeeOverride> {
+  const overrides = await fetchEmployeeOverrides();
+  const existing = overrides.find((o) => o.id === payload.id);
+
+  if (existing) {
+    const { data } = await localApi.patch<EmployeeOverride>(
+      `/employeeOverrides/${payload.id}`,
+      payload,
+    );
+    return data;
+  }
+
+  const { data } = await localApi.post<EmployeeOverride>('/employeeOverrides', payload);
+  return data;
+}
+
+export async function deleteEmployee(id: number): Promise<void> {
+  if (id <= EXTERNAL_EMPLOYEE_COUNT) {
+    throw new Error(
+      "Impossible de supprimer un employé venant du roster Reqres (lecture seule).",
+    );
+  }
+  await localApi.delete(`/employeeOverrides/${id}`);
 }

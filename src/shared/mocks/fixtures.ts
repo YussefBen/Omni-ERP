@@ -16,7 +16,7 @@ import type {
   Opportunity,
   PipelineStage,
 } from '@/features/crm';
-import type { RandomUserResult, ReqresUser } from '@/features/hrm';
+import type { EmployeeOverride, RandomUserResult, ReqresUser } from '@/features/hrm';
 import type { LeaveRequest, PresenceEntry } from '@/features/hrm';
 import type {
   Comment as PmsComment,
@@ -413,6 +413,10 @@ export const mockPresenceEntries: PresenceEntry[] = [
   },
 ];
 
+/* ---------- RH : surcharges employés (JSON Server) ---------- */
+
+export const mockEmployeeOverrides: EmployeeOverride[] = [];
+
 /* ---------- PMS : surcharges projets/tâches et commentaires (JSON Server) ---------- */
 
 export const mockProjectOverrides: ProjectOverride[] = [];
@@ -467,6 +471,8 @@ export function resetFixtures(): void {
 
   mockProjectOverrides.length = 0;
   mockTaskOverrides.length = 0;
+
+  mockEmployeeOverrides.length = 0;
 
   mockPmsComments.length = 0;
   mockPmsComments.push(...pmsCommentsSnapshot.map((c) => ({ ...c })));
