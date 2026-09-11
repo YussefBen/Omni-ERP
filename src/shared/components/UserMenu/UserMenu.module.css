@@ -51,3 +51,12 @@
   background: var(--accent-bg);
   border-color: var(--accent-border);
 }
+
+.devRoleSelect {
+  font-size: 0.7rem;
+  padding: 2px 4px;
+  border: 1px dashed var(--accent-border);
+  border-radius: 4px;
+  background: var(--accent-bg);
+  color: var(--text);
+}
