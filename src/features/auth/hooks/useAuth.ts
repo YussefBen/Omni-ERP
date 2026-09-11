@@ -1,6 +1,7 @@
 // Hooks pour se connecter et s'inscrire
 import { useMutation } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
+import { useAudit } from '@/features/security';
 import { login as loginRequest, register as registerRequest } from '../services/authService';
 import { MAX_LOGIN_ATTEMPTS, SESSION_DURATION_MS, useAuthStore } from '../store/authStore';
 import type { AuthResponse, LoginPayload, RegisterPayload } from '../types';
@@ -23,6 +24,7 @@ export function useLogin(): UseLoginResult {
   const lockedUntil = useAuthStore((s) => s.lockedUntil);
   const setSession = useAuthStore((s) => s.setSession);
   const registerFailedAttempt = useAuthStore((s) => s.registerFailedAttempt);
+  const audit = useAudit();
 
   // On ne peut pas appeler Date.now() direct dans le rendu, donc on passe par un état
   const [isLocked, setIsLocked] = useState(false);
@@ -50,9 +52,11 @@ export function useLogin(): UseLoginResult {
     },
     onSuccess: (data) => {
       setSession({ ...data, expiresAt: Date.now() + SESSION_DURATION_MS });
+      audit('login.success', 'succes', data.user.email);
     },
     onError: () => {
       registerFailedAttempt();
+      audit('login.failure', 'echec');
     },
   });
 

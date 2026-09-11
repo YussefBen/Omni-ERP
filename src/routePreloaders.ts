@@ -11,7 +11,7 @@ export const loadOrders = () => import('./app/pages/OrdersPage/OrdersPage');
 export const loadSuppliers = () => import('./app/pages/SuppliersPage/SuppliersPage');
 export const loadSettings = () => import('./app/pages/SettingsPage/SettingsPage');
 export const loadReports = () => import('./app/pages/ReportsPage/ReportsPage');
-
+export const loadSecurity = () => import('./app/pages/SecurityPage/SecurityPage');
 
 export const routePreloaders: Record<string, () => Promise<unknown>> = {
   '/dashboard': loadDashboard,
@@ -26,4 +26,5 @@ export const routePreloaders: Record<string, () => Promise<unknown>> = {
   '/suppliers': loadSuppliers,
   '/settings': loadSettings,
   '/reports': loadReports,
+  '/security': loadSecurity,
 };

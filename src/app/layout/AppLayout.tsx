@@ -1,12 +1,13 @@
 import { useCallback, useState, type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { useSession } from '@/features/auth';
 import { ThemeToggle } from '@/shared/components/ThemeToggle/ThemeToggle';
+import { UserMenu } from '@/shared/components/UserMenu/UserMenu';
 import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
+import { routePreloaders } from '../../routePreloaders';
 import { prefetchRouteData } from './prefetchRouteData';
 import styles from './AppLayout.module.css';
-import { routePreloaders } from '../../routePreloaders';
-import { UserMenu } from '@/shared/components/UserMenu/UserMenu';
 
 interface NavItem {
   to: string;
@@ -61,6 +62,10 @@ const NAV_GROUPS: NavGroup[] = [
     title: 'Compte',
     items: [{ to: '/settings', label: 'Paramètres' }],
   },
+  {
+    title: 'Sécurité',
+    items: [{ to: '/security', label: "Journal d'audit" }],
+  },
 ];
 
 interface AppLayoutProps {
@@ -71,6 +76,14 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isOnline = useOnlineStatus();
   const queryClient = useQueryClient();
+  const { role } = useSession();
+
+  // Le lien vers le journal d'audit n'apparaît que pour les administrateurs :
+  // un rôle inférieur tomberait de toute façon sur un refus explicite
+  // (ProtectedRoute), mais autant ne pas proposer un lien qui mène à un mur.
+  const visibleNavGroups = NAV_GROUPS.filter(
+    (group) => group.title !== 'Sécurité' || role === 'admin',
+  );
 
   // Précharge le fichier de l'écran survolé, et ses données si elles sont
   // déclarées. Un survol dure quelques centaines de millisecondes, ce qui
@@ -126,7 +139,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         className={`${styles.sidebar} ${menuOpen ? styles.sidebarOpen : ''}`}
         aria-label="Navigation principale"
       >
-        {NAV_GROUPS.map((group) => (
+        {visibleNavGroups.map((group) => (
           <div key={group.title} className={styles.navGroup}>
             <h2 className={styles.navGroupTitle}>{group.title}</h2>
             <ul className={styles.navList}>
